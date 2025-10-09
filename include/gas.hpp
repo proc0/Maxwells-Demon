@@ -1,12 +1,14 @@
 #pragma once
 
 #include <raylib.h>
+#include <raymath.h>
 
 #define DENSITY 50
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
 #define CONTAINER_Y 200
+#define GRAVITY 9.8f
 
 typedef struct Molecule {
     Vector2 force {};
@@ -31,4 +33,5 @@ class Gas {
         void Render() const;
         void Unload();
         void Update();
+        void UpdateMovement(Molecule& mol);
 };

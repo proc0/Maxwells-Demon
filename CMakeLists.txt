@@ -78,6 +78,7 @@ if(USE_RAYLIB_LOCAL)
     # Raylib path - used for both desktop and web
     if(EXISTS "${LOCAL_RAYLIB}")
         message(STATUS "Using local Raylib: ${LOCAL_RAYLIB}")
+        set(USE_RAYLIB_FETCH OFF)
     elseif(USE_RAYLIB_FETCH)
         # fallback to fetching Raylib
         set(USE_RAYLIB_LOCAL OFF)

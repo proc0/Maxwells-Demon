@@ -21,7 +21,7 @@ typedef struct Molecule {
     int id = 0;
     bool active = false;
     bool collided = false;
-    // bool debounce = false;
+    int debounce = 60;
 } Molecule;
 
 class Gas {

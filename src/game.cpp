@@ -38,6 +38,7 @@ void Game::Render() const {
 
         gas.Render();
         
+        DrawFPS(20, 20);
     EndDrawing();
 }
 

@@ -22,6 +22,7 @@ void Gas::Create() {
             .id = i,
             .active = true,
             .collided = false,
+            .debounce = 60,
         };
     }
 }
@@ -44,6 +45,23 @@ void Gas::Update() {
     //     }
     // }
     for (Molecule& mol : molecules) {
+
+        for(Molecule& m2: molecules) {
+            if(m2.id == mol.id){
+                continue;
+            }
+
+            if(CheckCollisionCircles(m2.position, m2.radius, mol.position, mol.radius)){
+                mol.collided = true;
+                m2.collided = true;
+            }
+        }
+
+        // if(!mol.collided){
+        //     mol.debounce = false;
+        //     mol.debounce = false;
+        // }
+
         UpdateMovement(mol);
     }
 }
@@ -77,12 +95,21 @@ void Gas::UpdateMovement(Molecule &mol) {
         mol.velocity *= -1;
     }
     // on collision
-    // if(mol.collided && !mol.debounce) {
-    //     // reverse direction
-    //     mol.velocity *= -1;
-    //     mol.collided = false;
-    //     mol.debounce = true;
-    // }
+    if(mol.collided && mol.debounce == 60) {
+        // reverse direction
+        mol.velocity *= -1;
+        mol.collided = false;
+        mol.debounce--;
+    }
+
+    if(mol.debounce < 60 && mol.debounce > 0){
+        mol.debounce--;
+    }
+
+    if(mol.debounce <= 0){
+        mol.debounce = 60;
+        mol.collided = false;
+    }
 
     // if(mol.velocity.y < 0 ) {
     //     // add gravity on bounce

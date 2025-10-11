@@ -54,9 +54,28 @@ void Gas::Update() {
             if(CheckCollisionCircles(m2.position, m2.radius, mol.position, mol.radius)){
                 // mol.collided = true;
                 // m2.collided = true;
-                Vector2 vel = mol.velocity;
-                mol.velocity = Vector2Subtract(vel, m2.velocity)/2;
-                m2.velocity = Vector2Subtract(m2.velocity, vel)/2;
+                // Vector2 vel = mol.velocity;
+                // mol.velocity = Vector2Subtract(vel, m2.velocity)/2;
+                // m2.velocity = Vector2Subtract(m2.velocity, vel)/2;
+                float mRatio = (RESTITUTION + 1)*mol.mass/(mol.mass + m2.mass);
+                Vector2 vDiff = Vector2Subtract(mol.velocity, m2.velocity);
+                Vector2 pDiff = Vector2Subtract(mol.position, m2.position);
+
+
+                // Vector2 proj = { 0 };
+
+                // float v1dv2 = (vDiff.x*pDiff.x + vDiff.y*pDiff.y);
+                // float v2dv2 = (pDiff.x*pDiff.x + pDiff.y*pDiff.y);
+
+                // float mag = v1dv2/v2dv2;
+
+                // proj.x = pDiff.x*mag;
+                // proj.y = pDiff.y*mag;
+
+                Vector2 proj = pDiff*(Vector2DotProduct(vDiff, pDiff)/Vector2DotProduct(pDiff, pDiff));
+                mol.velocity = Vector2Subtract(mol.velocity, proj*mRatio);
+                // mol.force = Vector2Subtract(mol.force, proj*mRatio);
+                mol.force = Vector2SubtractValue(mol.force, 0.5f);
             }
         }
 
@@ -91,11 +110,18 @@ void Gas::UpdateMovement(Molecule &mol) {
     // v(t+Δt) = v(t) + a(t)Δt
     mol.velocity = mol.velocity + acceleration * deltaTime;
 
+    // mol.force = mol.velocity/deltaTime;
     // [rotation] basic simple rotation effect
     // mol.rotation += acceleration.x * halfTime;
     
-    if(mol.position.x > CONTAINER_WIDTH + CONTAINER_X || mol.position.x < CONTAINER_X || mol.position.y > CONTAINER_HEIGHT + CONTAINER_Y || mol.position.y < CONTAINER_Y) {
-        mol.velocity *= -1;
+    if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X - 3 || mol.position.x - mol.radius < CONTAINER_X + 3) {
+        mol.velocity.x *= -RESTITUTION;
+        mol.force.x -= mol.force.x/2;
+    }
+
+    if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y - 3 || mol.position.y - mol.radius < CONTAINER_Y + 3) {
+        mol.velocity.y *= -RESTITUTION;
+        mol.force.y -= mol.force.y/2;
     }
     // on collision
     // if(mol.collided && mol.debounce == 60) {

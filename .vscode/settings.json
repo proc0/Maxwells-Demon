@@ -3,6 +3,7 @@
   "files.associations": {
     "string": "cpp",
     "*.in": "cpp",
-    "*.m": "cpp"
+    "*.m": "cpp",
+    "cmath": "cpp"
   }
 }

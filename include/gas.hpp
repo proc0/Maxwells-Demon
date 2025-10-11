@@ -9,6 +9,7 @@
 #define CONTAINER_X 200
 #define CONTAINER_Y 200
 #define GRAVITY 9.8f
+#define RESTITUTION 0.9f
 
 typedef struct Molecule {
     Vector2 force {};

@@ -57,9 +57,11 @@ void Gas::Update() {
                 // Vector2 vel = mol.velocity;
                 // mol.velocity = Vector2Subtract(vel, m2.velocity)/2;
                 // m2.velocity = Vector2Subtract(m2.velocity, vel)/2;
-                float mRatio = (RESTITUTION + 1)*mol.mass/(mol.mass + m2.mass);
-                Vector2 vDiff = Vector2Subtract(mol.velocity, m2.velocity);
-                Vector2 pDiff = Vector2Subtract(mol.position, m2.position);
+
+
+                // float mRatio = (RESTITUTION + 1)*mol.mass/(mol.mass + m2.mass);
+                // Vector2 vDiff = Vector2Subtract(mol.velocity, m2.velocity);
+                // Vector2 pDiff = Vector2Subtract(mol.position, m2.position);
 
 
                 // Vector2 proj = { 0 };
@@ -72,10 +74,26 @@ void Gas::Update() {
                 // proj.x = pDiff.x*mag;
                 // proj.y = pDiff.y*mag;
 
-                Vector2 proj = pDiff*(Vector2DotProduct(vDiff, pDiff)/Vector2DotProduct(pDiff, pDiff));
-                mol.velocity = Vector2Subtract(mol.velocity, proj*mRatio);
+                // Vector2 proj = pDiff*(Vector2DotProduct(vDiff, pDiff)/Vector2DotProduct(pDiff, pDiff));
+                // mol.velocity = Vector2Subtract(mol.velocity, proj*mRatio);
                 // mol.force = Vector2Subtract(mol.force, proj*mRatio);
-                mol.force = Vector2SubtractValue(mol.force, 0.5f);
+                // mol.force = Vector2SubtractValue(mol.force, 0.5f);
+                float distance = Vector2Distance(m2.position, mol.position);
+                float minDistance = mol.radius + m2.radius;
+                Vector2 normal = Vector2Normalize(Vector2Subtract(m2.position, mol.position));
+                Vector2 relativeVelocity = Vector2Subtract(m2.velocity, mol.velocity);
+
+                float impulseValue = Vector2DotProduct(relativeVelocity, normal);
+                float repulseValue = minDistance - distance;
+                Vector2 impulse = { normal.x*impulseValue, normal.y*impulseValue };
+                Vector2 repulse = { normal.x*repulseValue, normal.y*repulseValue };
+
+                mol.velocity = Vector2Add(mol.velocity, { impulse.x/mol.mass, impulse.y/mol.mass });
+                m2.velocity = Vector2Subtract(m2.velocity, { impulse.x/m2.mass, impulse.y/m2.mass });
+
+                mol.position = Vector2Subtract(mol.position, { repulse.x/mol.mass, repulse.y/mol.mass });
+                m2.position = Vector2Add(m2.position, { repulse.x/m2.mass, repulse.y/m2.mass });
+
             }
         }
 
@@ -114,14 +132,22 @@ void Gas::UpdateMovement(Molecule &mol) {
     // [rotation] basic simple rotation effect
     // mol.rotation += acceleration.x * halfTime;
     
-    if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X - 3 || mol.position.x - mol.radius < CONTAINER_X + 3) {
+    if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X - 3){
+        mol.position.x = CONTAINER_WIDTH + CONTAINER_X - 3 - mol.radius;
         mol.velocity.x *= -RESTITUTION;
-        mol.force.x -= mol.force.x/2;
+    } else if(mol.position.x - mol.radius < CONTAINER_X + 3) {
+        mol.position.x = CONTAINER_X + 3 + mol.radius;
+        mol.velocity.x *= -RESTITUTION;
+        // mol.force.x -= mol.force.x/2;
     }
 
-    if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y - 3 || mol.position.y - mol.radius < CONTAINER_Y + 3) {
+    if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y - 3) {
+        mol.position.y = CONTAINER_HEIGHT + CONTAINER_Y - 3 - mol.radius;
         mol.velocity.y *= -RESTITUTION;
-        mol.force.y -= mol.force.y/2;
+    } else if(mol.position.y - mol.radius < CONTAINER_Y + 3) {
+        mol.position.y = CONTAINER_Y + 3 + mol.radius;
+        mol.velocity.y *= -RESTITUTION;
+        // mol.force.y -= mol.force.y/2;
     }
     // on collision
     // if(mol.collided && mol.debounce == 60) {

@@ -121,12 +121,12 @@ void Gas::UpdateMovement(Molecule &mol) {
     const float halfTime = deltaTime * 0.5f;
     // [acceleration] using F=ma
     const Vector2 acceleration = mol.force/mol.mass;
-    // (i) [next position] expanding first equation to match order
-    // x(t+Δt) = x(t) + v(t) * Δt + a(t) * Δt * (Δt * 1/2)
-    mol.position = mol.position + mol.velocity * deltaTime + acceleration * deltaTime * halfTime;
     // (iii) [next velocity] without force change (skips (ii))
     // v(t+Δt) = v(t) + a(t)Δt
     mol.velocity = mol.velocity + acceleration * deltaTime;
+    // (i) [next position] expanding first equation to match order
+    // x(t+Δt) = x(t) + v(t) * Δt + a(t) * Δt * (Δt * 1/2)
+    mol.position = mol.position + mol.velocity * deltaTime + acceleration * deltaTime * halfTime;
 
     // mol.force = mol.velocity/deltaTime;
     // [rotation] basic simple rotation effect

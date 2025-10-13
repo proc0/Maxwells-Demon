@@ -1,6 +1,6 @@
 # Maxwell's Demon
 
-Maxwell's Demon Demo
+Maxwell's Demon - watch the demon seperate molecules and lower the entropy of the system or try doing it yourself.
 
 ## Quick Start (Desktop Debug Build)
 

@@ -11,11 +11,13 @@ void Gas::Create() {
         }
         
         molecules[i] = {
+            // .force = {0, 0},
             .force = { float(GetRandomValue(-20, 20)), float(GetRandomValue(-20, 20)) },
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .origin = { 0.0f, 0.0f },
             .position = { float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH-3)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT-3)) },
             .velocity = { 0.0f, 0.0f },
+            .acceleration = { 0.0f, 0.0f },
             .color = GetRandomValue(0, 1) == 1 ? RED : BLUE,
             .mass = 1.0f,
             .radius = 5.0f,
@@ -45,64 +47,9 @@ void Gas::Update() {
     //     }
     // }
     for (Molecule& mol : molecules) {
-
-        for(Molecule& m2: molecules) {
-            if(m2.id == mol.id){
-                continue;
-            }
-
-            if(CheckCollisionCircles(m2.position, m2.radius, mol.position, mol.radius)){
-                // mol.collided = true;
-                // m2.collided = true;
-                // Vector2 vel = mol.velocity;
-                // mol.velocity = Vector2Subtract(vel, m2.velocity)/2;
-                // m2.velocity = Vector2Subtract(m2.velocity, vel)/2;
-
-
-                // float mRatio = (RESTITUTION + 1)*mol.mass/(mol.mass + m2.mass);
-                // Vector2 vDiff = Vector2Subtract(mol.velocity, m2.velocity);
-                // Vector2 pDiff = Vector2Subtract(mol.position, m2.position);
-
-
-                // Vector2 proj = { 0 };
-
-                // float v1dv2 = (vDiff.x*pDiff.x + vDiff.y*pDiff.y);
-                // float v2dv2 = (pDiff.x*pDiff.x + pDiff.y*pDiff.y);
-
-                // float mag = v1dv2/v2dv2;
-
-                // proj.x = pDiff.x*mag;
-                // proj.y = pDiff.y*mag;
-
-                // Vector2 proj = pDiff*(Vector2DotProduct(vDiff, pDiff)/Vector2DotProduct(pDiff, pDiff));
-                // mol.velocity = Vector2Subtract(mol.velocity, proj*mRatio);
-                // mol.force = Vector2Subtract(mol.force, proj*mRatio);
-                // mol.force = Vector2SubtractValue(mol.force, 0.5f);
-                float distance = Vector2Distance(m2.position, mol.position);
-                float minDistance = mol.radius + m2.radius;
-                Vector2 normal = Vector2Normalize(Vector2Subtract(m2.position, mol.position));
-                Vector2 relativeVelocity = Vector2Subtract(m2.velocity, mol.velocity);
-
-                float impulseValue = Vector2DotProduct(relativeVelocity, normal);
-                float repulseValue = minDistance - distance;
-                Vector2 impulse = { normal.x*impulseValue, normal.y*impulseValue };
-                Vector2 repulse = { normal.x*repulseValue, normal.y*repulseValue };
-
-                mol.velocity = Vector2Add(mol.velocity, { impulse.x/mol.mass, impulse.y/mol.mass });
-                m2.velocity = Vector2Subtract(m2.velocity, { impulse.x/m2.mass, impulse.y/m2.mass });
-
-                mol.position = Vector2Subtract(mol.position, { repulse.x/mol.mass, repulse.y/mol.mass });
-                m2.position = Vector2Add(m2.position, { repulse.x/m2.mass, repulse.y/m2.mass });
-
-            }
-        }
-
-        // if(!mol.collided){
-        //     mol.debounce = false;
-        //     mol.debounce = false;
-        // }
-
         UpdateMovement(mol);
+        CheckBounds(mol);
+        CollideZone(mol);
     }
 }
 
@@ -110,27 +57,7 @@ void Gas::Unload() {
     
 }
 
-void Gas::UpdateMovement(Molecule &mol) {
-    // Velocity Verlet Integration
-    // (i)   x(t+Δt) = x(t) + v(t)Δt + 1/2a(t)Δt^2
-    // (ii)  a(t+Δt) = f(x(t+Δt))
-    // (iii) v(t+Δt) = v(t) + 1/2(a(t)+a(t+Δt))Δt
-
-    // Δt and Δt * 1/2
-    const float deltaTime = GetFrameTime();
-    const float halfTime = deltaTime * 0.5f;
-    // [acceleration] using F=ma
-    const Vector2 acceleration = mol.force/mol.mass;
-    // (iii) [next velocity] without force change (skips (ii))
-    // v(t+Δt) = v(t) + a(t)Δt
-    mol.velocity = mol.velocity + acceleration * deltaTime;
-    // (i) [next position] expanding first equation to match order
-    // x(t+Δt) = x(t) + v(t) * Δt + a(t) * Δt * (Δt * 1/2)
-    mol.position = mol.position + mol.velocity * deltaTime + acceleration * deltaTime * halfTime;
-
-    // mol.force = mol.velocity/deltaTime;
-    // [rotation] basic simple rotation effect
-    // mol.rotation += acceleration.x * halfTime;
+void Gas::CheckBounds(Molecule& mol) {
     
     if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X - 3){
         mol.position.x = CONTAINER_WIDTH + CONTAINER_X - 3 - mol.radius;
@@ -149,28 +76,106 @@ void Gas::UpdateMovement(Molecule &mol) {
         mol.velocity.y *= -RESTITUTION;
         // mol.force.y -= mol.force.y/2;
     }
-    // on collision
-    // if(mol.collided && mol.debounce == 60) {
-    //     // reverse direction
-    //     mol.velocity *= -1;
-    //     mol.collided = false;
-    //     mol.debounce--;
-    // }
+}
 
-    // if(mol.debounce < 60 && mol.debounce > 0){
-    //     mol.debounce--;
-    // }
+void Gas::CheckCollision(Molecule &mol) {
+    for(Molecule& other: molecules) {
+        if(other.id == mol.id){
+            continue;
+        }
 
-    // if(mol.debounce <= 0){
-    //     mol.debounce = 60;
-    //     mol.collided = false;
-    // }
+        if(CheckCollisionCircles(other.position, other.radius, mol.position, mol.radius)){
+            Repulse(mol, other);
+            other.collided = true;
+            mol.collided = true;
+        }
+    }
+}
 
-    // if(mol.velocity.y < 0 ) {
-    //     // add gravity on bounce
-    //     mol.velocity.y += GRAVITY * deltaTime;
-    // } else {
-    //     // reset debounce on fall
-    //     mol.debounce = false;
-    // }
+void Gas::CollideZone(Molecule &mol) {
+    if(!mol.collided) return;
+
+    for(Molecule& other: molecules) {
+        if(other.id == mol.id || !other.collided){
+            continue;
+        }
+
+        Collide(mol, other);
+
+        mol.collided = false;
+        other.collided = false;
+    }
+}
+
+void Gas::Collide(Molecule& m1, Molecule& m2) {
+    Vector2 normal = m1.position - m2.position;
+    Vector2 unitNormal = Vector2Normalize(normal);
+    Vector2 unitTangent = Vector2(-unitNormal.y, unitNormal.x);
+
+    float normalComponent1 = Vector2DotProduct(m1.velocity, unitNormal);
+    float tangentComponent1 = Vector2DotProduct(m1.velocity, unitTangent);
+    float normalComponent2 = Vector2DotProduct(m2.velocity, unitNormal);
+    float tangentComponent2 = Vector2DotProduct(m2.velocity, unitTangent);
+
+    float totalMass = m1.mass + m2.mass;
+    float normalVelocity1 = (normalComponent1*(m1.mass - m2.mass) + 2*m2.mass*normalComponent2)/totalMass;
+    float normalVelocity2 = (normalComponent2*(m2.mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
+
+    Vector2 normalVectorVelocity1 = unitNormal * normalVelocity1;
+    Vector2 normalVectorVelocity2 = unitNormal * normalVelocity2;
+    Vector2 tangentVectorVelocity1 = unitTangent * tangentComponent1;
+    Vector2 tangentVectorVelocity2 = unitTangent * tangentComponent2;
+
+    m1.velocity = Vector2Add(normalVectorVelocity1, tangentVectorVelocity1);
+    m2.velocity = Vector2Add(normalVectorVelocity2, tangentVectorVelocity2);
+}
+
+void Gas::Repulse(Molecule& m1, Molecule& m2){
+    const float molDistance = Vector2Distance(m1.position, m2.position);
+    const float collideDistance = m1.radius + m2.radius;
+
+    const float deltaDistance = collideDistance - molDistance;
+
+    const Vector2 normal1 = Vector2Normalize(Vector2Subtract(m1.position, m2.position));
+    const Vector2 normal2 = Vector2Normalize(Vector2Subtract(m2.position, m1.position));
+    const Vector2 repulse1 = normal1 * deltaDistance;
+    const Vector2 repulse2 = normal2 * deltaDistance;
+
+    m1.position += repulse1/(m1.mass*m1.mass);
+    m2.position += repulse2/(m2.mass*m2.mass);
+}
+
+void Gas::UpdateMovement(Molecule &mol) {
+    // Velocity Verlet Integration
+    // (i)   x(t+Δt) = x(t) + v(t)Δt + 1/2a(t)Δt^2
+    // (ii)  a(t+Δt) = f(x(t+Δt))
+    // (iii) v(t+Δt) = v(t) + 1/2(a(t)+a(t+Δt))Δt
+
+    // Δt and Δt * 1/2
+    const float deltaTime = GetFrameTime();
+    const float halfTimeSq = deltaTime * deltaTime * 0.5f;
+    const Vector2 newVelocity = mol.velocity * deltaTime;
+    const Vector2 newAcceleration = mol.acceleration * halfTimeSq;
+    mol.position += Vector2Add(newVelocity, newAcceleration);
+
+    CheckCollision(mol);
+
+    if(mol.collided) return;
+
+    mol.acceleration = newAcceleration;
+    Vector2 nextAcceleration = mol.force/mol.mass;
+    Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration*(deltaTime/2));
+    mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration*(deltaTime/2));
+    // // [acceleration] using F=ma
+    // const Vector2 acceleration = mol.force/mol.mass;
+    // // (iii) [next velocity] without force change (skips (ii))
+    // // v(t+Δt) = v(t) + a(t)Δt
+    // mol.velocity = mol.velocity + acceleration * deltaTime;
+    // // (i) [next position] expanding first equation to match order
+    // // x(t+Δt) = x(t) + v(t) * Δt + a(t) * Δt * (Δt * 1/2)
+    // mol.position = mol.position + mol.velocity * deltaTime + acceleration * deltaTime * halfTimeSq;
+
+    // mol.force = mol.velocity/deltaTime;
+    // [rotation] basic simple rotation effect
+    // mol.rotation += acceleration.x * halfTime;
 }

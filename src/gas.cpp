@@ -1,10 +1,8 @@
 #include "gas.hpp"
 
 void Gas::Load() {
-    Create();
-}
+    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS);
 
-void Gas::Create() {
     for(int i=0; i<DENSITY; i++){
         if(molecules[i].active) {
             continue;
@@ -20,12 +18,14 @@ void Gas::Create() {
             .acceleration = { 0.0f, 0.0f },
             .color = GetRandomValue(0, 1) == 1 ? RED : BLUE,
             .mass = 1.0f,
-            .radius = 5.0f,
+            .radius = MOLECULE_RADIUS,
             .id = i,
             .active = true,
             .collided = false,
             .debounce = 60,
         };
+
+        grid.add(&molecules[i]);
     }
 }
 
@@ -49,6 +49,7 @@ void Gas::Update() {
     for (Molecule& mol : molecules) {
         UpdateMovement(mol);
         CheckBounds(mol);
+        grid.update(&mol);
         CollideZone(mol);
     }
 }
@@ -65,7 +66,6 @@ void Gas::CheckBounds(Molecule& mol) {
     } else if(mol.position.x - mol.radius < CONTAINER_X + 3) {
         mol.position.x = CONTAINER_X + 3 + mol.radius;
         mol.velocity.x *= -RESTITUTION;
-        // mol.force.x -= mol.force.x/2;
     }
 
     if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y - 3) {
@@ -74,19 +74,20 @@ void Gas::CheckBounds(Molecule& mol) {
     } else if(mol.position.y - mol.radius < CONTAINER_Y + 3) {
         mol.position.y = CONTAINER_Y + 3 + mol.radius;
         mol.velocity.y *= -RESTITUTION;
-        // mol.force.y -= mol.force.y/2;
     }
 }
 
 void Gas::CheckCollision(Molecule &mol) {
-    for(Molecule& other: molecules) {
-        if(other.id == mol.id){
+    std::vector<Molecule*> zone = grid.getZone(&mol);
+
+    for(Molecule* other: zone) {
+        if(other->id == mol.id){
             continue;
         }
 
-        if(CheckCollisionCircles(other.position, other.radius, mol.position, mol.radius)){
-            Repulse(mol, other);
-            other.collided = true;
+        if(CheckCollisionCircles(other->position, other->radius, mol.position, mol.radius)){
+            Repulse(mol, *other);
+            other->collided = true;
             mol.collided = true;
         }
     }
@@ -95,15 +96,17 @@ void Gas::CheckCollision(Molecule &mol) {
 void Gas::CollideZone(Molecule &mol) {
     if(!mol.collided) return;
 
-    for(Molecule& other: molecules) {
-        if(other.id == mol.id || !other.collided){
+    std::vector<Molecule*> zone = grid.getZone(&mol);
+    
+    for(Molecule* other: zone) {
+        if(other->id == mol.id || !other->collided){
             continue;
         }
 
-        Collide(mol, other);
+        Collide(mol, *other);
 
         mol.collided = false;
-        other.collided = false;
+        other->collided = false;
     }
 }
 
@@ -150,8 +153,6 @@ void Gas::UpdateMovement(Molecule &mol) {
     // (i)   x(t+Δt) = x(t) + v(t)Δt + 1/2a(t)Δt^2
     // (ii)  a(t+Δt) = f(x(t+Δt))
     // (iii) v(t+Δt) = v(t) + 1/2(a(t)+a(t+Δt))Δt
-
-    // Δt and Δt * 1/2
     const float deltaTime = GetFrameTime();
     const float halfTimeSq = deltaTime * deltaTime * 0.5f;
     const Vector2 newVelocity = mol.velocity * deltaTime;
@@ -166,16 +167,96 @@ void Gas::UpdateMovement(Molecule &mol) {
     Vector2 nextAcceleration = mol.force/mol.mass;
     Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration*(deltaTime/2));
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration*(deltaTime/2));
-    // // [acceleration] using F=ma
-    // const Vector2 acceleration = mol.force/mol.mass;
-    // // (iii) [next velocity] without force change (skips (ii))
-    // // v(t+Δt) = v(t) + a(t)Δt
-    // mol.velocity = mol.velocity + acceleration * deltaTime;
-    // // (i) [next position] expanding first equation to match order
-    // // x(t+Δt) = x(t) + v(t) * Δt + a(t) * Δt * (Δt * 1/2)
-    // mol.position = mol.position + mol.velocity * deltaTime + acceleration * deltaTime * halfTimeSq;
+}
 
-    // mol.force = mol.velocity/deltaTime;
-    // [rotation] basic simple rotation effect
-    // mol.rotation += acceleration.x * halfTime;
+void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {
+    cellSize = _cellSize;
+    int columns = static_cast<int>(std::ceil(static_cast<float>(gridWidth) / cellSize));
+    int rows = static_cast<int>(std::ceil(static_cast<float>(gridHeight) / cellSize));
+
+    cellCount = Vector2(columns, rows);
+    cells.resize(columns, std::vector<std::vector<Molecule*>>(rows));
+
+    for (int x = 0; x < columns; ++x) {
+        for (int y = 0; y < rows; ++y) {
+            cells[x][y] = std::vector<Molecule*>();
+        }
+    }
+}
+
+Vector2 Grid::place(const Molecule* mol) const {
+    int x = static_cast<int>(mol->position.x / cellSize);
+    int y = static_cast<int>(mol->position.y / cellSize);
+
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x >= cellCount.x) x = cellCount.x - 1;
+    if (y >= cellCount.y) y = cellCount.y - 1;
+
+    return Vector2(x, y);
+}
+
+void Grid::add(Molecule* mol) {
+    Vector2 cell = place(mol);
+    cells[cell.x][cell.y].push_back(mol);
+    mol->cell = cell;
+}
+
+void Grid::remove(Molecule* mol) {
+    const Vector2& cell = mol->cell;
+    auto& cellParticles = cells[cell.x][cell.y];
+
+    auto it = std::find(cellParticles.begin(), cellParticles.end(), mol);
+    if (it != cellParticles.end()) {
+        *it = cellParticles.back();
+        cellParticles.pop_back();
+    }
+}
+
+void Grid::update(Molecule* mol) {
+    Vector2 newCell = place(mol);
+    if (newCell.x != mol->cell.x || newCell.y != mol->cell.y) {
+        remove(mol);
+        mol->cell = newCell;
+        cells[newCell.x][newCell.y].push_back(mol);
+    }
+}
+
+std::vector<Molecule*> Grid::getZone(Molecule* mol) {
+    int left   = static_cast<int>(std::floor(mol->getLeft()   / cellSize));
+    int right  = static_cast<int>(std::floor(mol->getRight()  / cellSize));
+    int top    = static_cast<int>(std::floor(mol->getTop()    / cellSize));
+    int bottom = static_cast<int>(std::floor(mol->getBottom() / cellSize));
+
+    int queryId = ++queryIds;
+    std::vector<Molecule*> zone;
+
+    for (int x = left; x <= right; ++x) {
+        for (int y = top; y <= bottom; ++y) {
+            if (x < 0 || y < 0 || x >= cellCount.x || y >= cellCount.y)
+                continue;
+
+            const auto& cellParticles = cells[x][y];
+            for (Molecule* p : cellParticles) {
+                if (p != mol && p->queryId != queryId) {
+                    p->queryId = queryId;
+                    zone.push_back(p);
+                }
+            }
+        }
+    }
+
+    return zone;
+}
+
+void Grid::clear() {
+    for (auto& col : cells) {
+        for (auto& cell : col) {
+            cell.clear();
+        }
+    }
+}
+
+const std::vector<Molecule*>& Grid::getCell(int x, int y) const {
+    return cells[x][y];
 }

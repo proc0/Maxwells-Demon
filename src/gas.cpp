@@ -1,8 +1,8 @@
 #include "gas.hpp"
 
 void Gas::Load() {
-    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS*2);
-    Test();
+    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS*3);
+    Populate();
 }
 
 void Gas::Test() {
@@ -75,7 +75,7 @@ void Gas::Render() const {
     DrawRectangle(CONTAINER_X-3, CONTAINER_Y-3, CONTAINER_WIDTH+6, CONTAINER_HEIGHT+6, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
     
-    grid.Render();
+    // grid.Render();
 
     for (const Molecule& mol : molecules) {
         if(!mol.active) continue;
@@ -154,6 +154,8 @@ void Gas::CollideZone(Molecule &mol) {
     }
 }
 
+// TODO: add inelastic collision by factoring in RESTITUION
+// update the color of the ball from red to blue as it loses energy
 void Gas::Collide(Molecule& m1, Molecule* m2) {
     Vector2 normal = m1.position - m2->position;
     Vector2 unitNormal = Vector2Normalize(normal);
@@ -229,8 +231,8 @@ void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {
 }
 
 Vector2 Grid::place(const Molecule* mol) const {
-    int x = static_cast<int>(mol->position.x / cellSize);
-    int y = static_cast<int>(mol->position.y / cellSize);
+    int x = static_cast<int>((mol->position.x - CONTAINER_X) / cellSize);
+    int y = static_cast<int>((mol->position.y - CONTAINER_Y) / cellSize);
 
     if (x < 0) x = 0;
     if (y < 0) y = 0;
@@ -287,10 +289,12 @@ void Grid::update(Molecule* mol) {
 }
 
 std::vector<Molecule*> Grid::getZone(Molecule* mol) {
-    int left   = static_cast<int>(std::floor(mol->getLeft()   / cellSize));
-    int right  = static_cast<int>(std::floor(mol->getRight()  / cellSize));
-    int top    = static_cast<int>(std::floor(mol->getTop()    / cellSize));
-    int bottom = static_cast<int>(std::floor(mol->getBottom() / cellSize));
+    // TODO: account for the width of the container walls, subtracting 3 or adding 3
+    // refactor this logic and consolidate with Grid::place to see if can use the same placement algorithm
+    int left   = static_cast<int>(std::floor((mol->getLeft() - CONTAINER_X)   / cellSize));
+    int right  = static_cast<int>(std::floor((mol->getRight() - CONTAINER_X)  / cellSize));
+    int top    = static_cast<int>(std::floor((mol->getTop() - CONTAINER_Y)    / cellSize));
+    int bottom = static_cast<int>(std::floor((mol->getBottom() - CONTAINER_Y) / cellSize));
 
     int queryId = ++queryIds;
     std::vector<Molecule*> zone;

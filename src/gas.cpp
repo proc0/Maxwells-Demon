@@ -1,7 +1,48 @@
 #include "gas.hpp"
 
 void Gas::Load() {
-    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS);
+    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS*2);
+    Test();
+}
+
+void Gas::Test() {
+
+    molecules[0] = {
+        .force = { 10, 0 },
+        .origin = { 0.0f, 0.0f },
+        .position = { CONTAINER_X + 250, CONTAINER_Y + 200 },
+        .velocity = { 0.0f, 0.0f },
+        .acceleration = { 0.0f, 0.0f },
+        .color = RED,
+        .mass = 1.0f,
+        .radius = MOLECULE_RADIUS,
+        .id = 0,
+        .active = true,
+        .collided = false,
+        .debounce = 60,
+    };
+    
+    grid.add(&molecules[0]);
+
+    molecules[1] = {
+        .force = { -10, 5 },
+        .origin = { 0.0f, 0.0f },
+        .position = { CONTAINER_X + 450, CONTAINER_Y + 150 },
+        .velocity = { 0.0f, 0.0f },
+        .acceleration = { 0.0f, 0.0f },
+        .color = BLUE,
+        .mass = 1.0f,
+        .radius = MOLECULE_RADIUS,
+        .id = 1,
+        .active = true,
+        .collided = false,
+        .debounce = 60,
+    };
+
+    grid.add(&molecules[1]);
+}
+
+void Gas::Populate() {
 
     for(int i=0; i<DENSITY; i++){
         if(molecules[i].active) {
@@ -30,8 +71,11 @@ void Gas::Load() {
 }
 
 void Gas::Render() const {
+    
     DrawRectangle(CONTAINER_X-3, CONTAINER_Y-3, CONTAINER_WIDTH+6, CONTAINER_HEIGHT+6, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
+    
+    grid.Render();
 
     for (const Molecule& mol : molecules) {
         if(!mol.active) continue;
@@ -47,10 +91,10 @@ void Gas::Update() {
     //     }
     // }
     for (Molecule& mol : molecules) {
-        UpdateMovement(mol);
         CheckBounds(mol);
-        grid.update(&mol);
+        UpdateMovement(mol);
         CollideZone(mol);
+        grid.update(&mol);
     }
 }
 
@@ -86,7 +130,7 @@ void Gas::CheckCollision(Molecule &mol) {
         }
 
         if(CheckCollisionCircles(other->position, other->radius, mol.position, mol.radius)){
-            Repulse(mol, *other);
+            Repulse(mol, other);
             other->collided = true;
             mol.collided = true;
         }
@@ -103,26 +147,26 @@ void Gas::CollideZone(Molecule &mol) {
             continue;
         }
 
-        Collide(mol, *other);
+        Collide(mol, other);
 
         mol.collided = false;
         other->collided = false;
     }
 }
 
-void Gas::Collide(Molecule& m1, Molecule& m2) {
-    Vector2 normal = m1.position - m2.position;
+void Gas::Collide(Molecule& m1, Molecule* m2) {
+    Vector2 normal = m1.position - m2->position;
     Vector2 unitNormal = Vector2Normalize(normal);
     Vector2 unitTangent = Vector2(-unitNormal.y, unitNormal.x);
 
     float normalComponent1 = Vector2DotProduct(m1.velocity, unitNormal);
     float tangentComponent1 = Vector2DotProduct(m1.velocity, unitTangent);
-    float normalComponent2 = Vector2DotProduct(m2.velocity, unitNormal);
-    float tangentComponent2 = Vector2DotProduct(m2.velocity, unitTangent);
+    float normalComponent2 = Vector2DotProduct(m2->velocity, unitNormal);
+    float tangentComponent2 = Vector2DotProduct(m2->velocity, unitTangent);
 
-    float totalMass = m1.mass + m2.mass;
-    float normalVelocity1 = (normalComponent1*(m1.mass - m2.mass) + 2*m2.mass*normalComponent2)/totalMass;
-    float normalVelocity2 = (normalComponent2*(m2.mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
+    float totalMass = m1.mass + m2->mass;
+    float normalVelocity1 = (normalComponent1*(m1.mass - m2->mass) + 2*m2->mass*normalComponent2)/totalMass;
+    float normalVelocity2 = (normalComponent2*(m2->mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
 
     Vector2 normalVectorVelocity1 = unitNormal * normalVelocity1;
     Vector2 normalVectorVelocity2 = unitNormal * normalVelocity2;
@@ -130,22 +174,22 @@ void Gas::Collide(Molecule& m1, Molecule& m2) {
     Vector2 tangentVectorVelocity2 = unitTangent * tangentComponent2;
 
     m1.velocity = Vector2Add(normalVectorVelocity1, tangentVectorVelocity1);
-    m2.velocity = Vector2Add(normalVectorVelocity2, tangentVectorVelocity2);
+    m2->velocity = Vector2Add(normalVectorVelocity2, tangentVectorVelocity2);
 }
 
-void Gas::Repulse(Molecule& m1, Molecule& m2){
-    const float molDistance = Vector2Distance(m1.position, m2.position);
-    const float collideDistance = m1.radius + m2.radius;
+void Gas::Repulse(Molecule& m1, Molecule* m2){
+    const float molDistance = Vector2Distance(m1.position, m2->position);
+    const float collideDistance = m1.radius + m2->radius;
 
     const float deltaDistance = collideDistance - molDistance;
 
-    const Vector2 normal1 = Vector2Normalize(Vector2Subtract(m1.position, m2.position));
-    const Vector2 normal2 = Vector2Normalize(Vector2Subtract(m2.position, m1.position));
+    const Vector2 normal1 = Vector2Normalize(Vector2Subtract(m1.position, m2->position));
+    const Vector2 normal2 = Vector2Normalize(Vector2Subtract(m2->position, m1.position));
     const Vector2 repulse1 = normal1 * deltaDistance;
     const Vector2 repulse2 = normal2 * deltaDistance;
 
     m1.position += repulse1/(m1.mass*m1.mass);
-    m2.position += repulse2/(m2.mass*m2.mass);
+    m2->position += repulse2/(m2->mass*m2->mass);
 }
 
 void Gas::UpdateMovement(Molecule &mol) {
@@ -206,10 +250,30 @@ void Grid::remove(Molecule* mol) {
     const Vector2& cell = mol->cell;
     auto& cellParticles = cells[cell.x][cell.y];
 
-    auto it = std::find(cellParticles.begin(), cellParticles.end(), mol);
-    if (it != cellParticles.end()) {
-        *it = cellParticles.back();
-        cellParticles.pop_back();
+    // auto it = std::find(cellParticles.begin(), cellParticles.end(), mol);
+    // if (it != cellParticles.end()) {
+    //     *it = cellParticles.back();
+    //     cellParticles.pop_back();
+    // }
+    auto newEnd = std::remove(cellParticles.begin(), cellParticles.end(), mol);
+
+    cellParticles.erase(newEnd, cellParticles.end());
+
+    // for(int i=0; i<cellParticles.size(); i++) {
+    //     const Molecule* m2 = cellParticles.at(i);
+    //     if(m2->id == mol->id) {
+    //         auto newEnd = std::remove(cellParticles.begin(), cellParticles.end(), mol);
+
+    //         cellParticles.erase(newEnd, cellParticles.end());
+    //     }
+    // }
+}
+
+void Grid::Render() const {
+    for (int x = 0; x < cellCount.x; ++x) {
+        for (int y = 0; y < cellCount.y; ++y) {
+            DrawPixel(x*cellSize + CONTAINER_X, y*cellSize + CONTAINER_Y, RED);
+        }
     }
 }
 
@@ -238,7 +302,7 @@ std::vector<Molecule*> Grid::getZone(Molecule* mol) {
 
             const auto& cellParticles = cells[x][y];
             for (Molecule* p : cellParticles) {
-                if (p != mol && p->queryId != queryId) {
+                if (p->id != mol->id && p->queryId != queryId) {
                     p->queryId = queryId;
                     zone.push_back(p);
                 }

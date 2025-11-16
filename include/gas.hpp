@@ -5,14 +5,16 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 50
+#define DENSITY 2
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
 #define CONTAINER_Y 200
 #define GRAVITY 9.8f
 #define RESTITUTION 1.0f
-#define MOLECULE_RADIUS 5.0f
+#define MOLECULE_RADIUS 8.0f
+#define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
+#define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
 
 typedef struct Molecule {
     Vector2 force {};
@@ -48,6 +50,7 @@ class Grid {
         void add(Molecule* mol);
         void remove(Molecule* mol);
         void update(Molecule* mol);
+        void Render() const;
         void clear();
         const std::vector<Molecule*>& getCell(int x, int y) const;
         std::vector<Molecule*> getZone(Molecule* mol);
@@ -60,12 +63,14 @@ class Gas {
     public:
         void Load();
         void Render() const;
+        void Populate();
+        void Test();
         void Unload();
         void Update();
         void UpdateMovement(Molecule& mol);
         void CheckBounds(Molecule& mol);
         void CheckCollision(Molecule& mol);
         void CollideZone(Molecule& mol);
-        void Collide(Molecule& m1, Molecule& m2);
-        void Repulse(Molecule& m1, Molecule& m2);
+        void Collide(Molecule& m1, Molecule* m2);
+        void Repulse(Molecule& m1, Molecule* m2);
 };

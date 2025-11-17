@@ -104,19 +104,19 @@ void Gas::Unload() {
 
 void Gas::CheckBounds(Molecule& mol) {
     
-    if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X - 3){
-        mol.position.x = CONTAINER_WIDTH + CONTAINER_X - 3 - mol.radius;
+    if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X){
+        mol.position.x = CONTAINER_WIDTH + CONTAINER_X - mol.radius;
         mol.velocity.x *= -RESTITUTION;
-    } else if(mol.position.x - mol.radius < CONTAINER_X + 3) {
-        mol.position.x = CONTAINER_X + 3 + mol.radius;
+    } else if(mol.position.x - mol.radius < CONTAINER_X) {
+        mol.position.x = CONTAINER_X + mol.radius;
         mol.velocity.x *= -RESTITUTION;
     }
 
-    if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y - 3) {
-        mol.position.y = CONTAINER_HEIGHT + CONTAINER_Y - 3 - mol.radius;
+    if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y) {
+        mol.position.y = CONTAINER_HEIGHT + CONTAINER_Y - mol.radius;
         mol.velocity.y *= -RESTITUTION;
-    } else if(mol.position.y - mol.radius < CONTAINER_Y + 3) {
-        mol.position.y = CONTAINER_Y + 3 + mol.radius;
+    } else if(mol.position.y - mol.radius < CONTAINER_Y) {
+        mol.position.y = CONTAINER_Y + mol.radius;
         mol.velocity.y *= -RESTITUTION;
     }
 }
@@ -230,9 +230,9 @@ void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {
     }
 }
 
-Vector2 Grid::place(const Molecule* mol) const {
-    int x = static_cast<int>((mol->position.x - CONTAINER_X) / cellSize);
-    int y = static_cast<int>((mol->position.y - CONTAINER_Y) / cellSize);
+Vector2 Grid::place(float _x, float _y) const {
+    int x = std::floor(static_cast<int>((_x - CONTAINER_X) / cellSize));
+    int y = std::floor(static_cast<int>((_y - CONTAINER_Y) / cellSize));
 
     if (x < 0) x = 0;
     if (y < 0) y = 0;
@@ -243,32 +243,17 @@ Vector2 Grid::place(const Molecule* mol) const {
 }
 
 void Grid::add(Molecule* mol) {
-    Vector2 cell = place(mol);
+    Vector2 cell = place(mol->position.x, mol->position.y);
     cells[cell.x][cell.y].push_back(mol);
     mol->cell = cell;
 }
 
 void Grid::remove(Molecule* mol) {
     const Vector2& cell = mol->cell;
-    auto& cellParticles = cells[cell.x][cell.y];
+    auto& cellMolecules = cells[cell.x][cell.y];
 
-    // auto it = std::find(cellParticles.begin(), cellParticles.end(), mol);
-    // if (it != cellParticles.end()) {
-    //     *it = cellParticles.back();
-    //     cellParticles.pop_back();
-    // }
-    auto newEnd = std::remove(cellParticles.begin(), cellParticles.end(), mol);
-
-    cellParticles.erase(newEnd, cellParticles.end());
-
-    // for(int i=0; i<cellParticles.size(); i++) {
-    //     const Molecule* m2 = cellParticles.at(i);
-    //     if(m2->id == mol->id) {
-    //         auto newEnd = std::remove(cellParticles.begin(), cellParticles.end(), mol);
-
-    //         cellParticles.erase(newEnd, cellParticles.end());
-    //     }
-    // }
+    auto newEnd = std::remove(cellMolecules.begin(), cellMolecules.end(), mol);
+    cellMolecules.erase(newEnd, cellMolecules.end());
 }
 
 void Grid::Render() const {
@@ -280,7 +265,7 @@ void Grid::Render() const {
 }
 
 void Grid::update(Molecule* mol) {
-    Vector2 newCell = place(mol);
+    Vector2 newCell = place(mol->position.x, mol->position.y);
     if (newCell.x != mol->cell.x || newCell.y != mol->cell.y) {
         remove(mol);
         mol->cell = newCell;
@@ -289,26 +274,19 @@ void Grid::update(Molecule* mol) {
 }
 
 std::vector<Molecule*> Grid::getZone(Molecule* mol) {
-    // TODO: account for the width of the container walls, subtracting 3 or adding 3
-    // refactor this logic and consolidate with Grid::place to see if can use the same placement algorithm
-    int left   = static_cast<int>(std::floor((mol->getLeft() - CONTAINER_X)   / cellSize));
-    int right  = static_cast<int>(std::floor((mol->getRight() - CONTAINER_X)  / cellSize));
-    int top    = static_cast<int>(std::floor((mol->getTop() - CONTAINER_Y)    / cellSize));
-    int bottom = static_cast<int>(std::floor((mol->getBottom() - CONTAINER_Y) / cellSize));
+    Vector2 topLeft = place(mol->getLeft(), mol->getTop());
+    Vector2 bottomRight = place(mol->getRight(), mol->getBottom());
 
     int queryId = ++queryIds;
     std::vector<Molecule*> zone;
 
-    for (int x = left; x <= right; ++x) {
-        for (int y = top; y <= bottom; ++y) {
-            if (x < 0 || y < 0 || x >= cellCount.x || y >= cellCount.y)
-                continue;
-
-            const auto& cellParticles = cells[x][y];
-            for (Molecule* p : cellParticles) {
-                if (p->id != mol->id && p->queryId != queryId) {
-                    p->queryId = queryId;
-                    zone.push_back(p);
+    for (int x = topLeft.x; x <= bottomRight.x; ++x) {
+        for (int y = topLeft.y; y <= bottomRight.y; ++y) {
+            const auto& cellMolecules = cells[x][y];
+            for (Molecule* m : cellMolecules) {
+                if (m->id != mol->id && m->queryId != queryId) {
+                    m->queryId = queryId;
+                    zone.push_back(m);
                 }
             }
         }
@@ -323,8 +301,4 @@ void Grid::clear() {
             cell.clear();
         }
     }
-}
-
-const std::vector<Molecule*>& Grid::getCell(int x, int y) const {
-    return cells[x][y];
 }

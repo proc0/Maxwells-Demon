@@ -46,13 +46,12 @@ class Grid {
 
     public:
         void Load(int gridWidth, int gridHeight, float _cellSize);
-        Vector2 place(const Molecule* mol) const;
+        Vector2 place(float x, float y) const;
         void add(Molecule* mol);
         void remove(Molecule* mol);
         void update(Molecule* mol);
         void Render() const;
         void clear();
-        const std::vector<Molecule*>& getCell(int x, int y) const;
         std::vector<Molecule*> getZone(Molecule* mol);
 };
 

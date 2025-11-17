@@ -190,8 +190,8 @@ void Gas::Repulse(Molecule& m1, Molecule* m2){
     const Vector2 repulse1 = normal1 * deltaDistance;
     const Vector2 repulse2 = normal2 * deltaDistance;
 
-    m1.position += repulse1/(m1.mass*m1.mass);
-    m2->position += repulse2/(m2->mass*m2->mass);
+    m1.position += repulse1/m1.mass;
+    m2->position += repulse2/m2->mass;
 }
 
 void Gas::UpdateMovement(Molecule &mol) {

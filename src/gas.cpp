@@ -49,15 +49,16 @@ void Gas::Populate() {
             continue;
         }
         
+        Vector2 vel = { float(GetRandomValue(-100, 100)), float(GetRandomValue(-100, 100)) };
         molecules[i] = {
             // .force = {0, 0},
             .force = { float(GetRandomValue(-20, 20)), float(GetRandomValue(-20, 20)) },
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .origin = { 0.0f, 0.0f },
             .position = { float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH-3)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT-3)) },
-            .velocity = { 0.0f, 0.0f },
+            .velocity = vel,
             .acceleration = { 0.0f, 0.0f },
-            .color = GetRandomValue(0, 1) == 1 ? RED : BLUE,
+            .color = ColorLerp(BLUE, RED, fabsf(vel.x + vel.y)),
             .mass = 1.0f,
             .radius = MOLECULE_RADIUS,
             .id = i,
@@ -92,7 +93,7 @@ void Gas::Update() {
     // }
     for (Molecule& mol : molecules) {
         CheckBounds(mol);
-        UpdateMovement(mol);
+        UpdateMovement(mol, ZERO_FORCE);
         CollideZone(mol);
         grid.update(&mol);
     }
@@ -148,9 +149,6 @@ void Gas::CollideZone(Molecule &mol) {
         }
 
         Collide(mol, other);
-
-        mol.collided = false;
-        other->collided = false;
     }
 }
 
@@ -167,8 +165,8 @@ void Gas::Collide(Molecule& m1, Molecule* m2) {
     float tangentComponent2 = Vector2DotProduct(m2->velocity, unitTangent);
 
     float totalMass = m1.mass + m2->mass;
-    float normalVelocity1 = (normalComponent1*(m1.mass - m2->mass) + 2*m2->mass*normalComponent2)/totalMass;
-    float normalVelocity2 = (normalComponent2*(m2->mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
+    float normalVelocity1 = (RESTITUTION*normalComponent1*(m1.mass - m2->mass) + 2*m2->mass*normalComponent2)/totalMass;
+    float normalVelocity2 = (RESTITUTION*normalComponent2*(m2->mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
 
     Vector2 normalVectorVelocity1 = unitNormal * normalVelocity1;
     Vector2 normalVectorVelocity2 = unitNormal * normalVelocity2;
@@ -177,6 +175,9 @@ void Gas::Collide(Molecule& m1, Molecule* m2) {
 
     m1.velocity = Vector2Add(normalVectorVelocity1, tangentVectorVelocity1);
     m2->velocity = Vector2Add(normalVectorVelocity2, tangentVectorVelocity2);
+
+    m1.collided = false;
+    m2->collided = false;
 }
 
 void Gas::Repulse(Molecule& m1, Molecule* m2){
@@ -194,7 +195,7 @@ void Gas::Repulse(Molecule& m1, Molecule* m2){
     m2->position += repulse2/m2->mass;
 }
 
-void Gas::UpdateMovement(Molecule &mol) {
+void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     // Velocity Verlet Integration
     // (i)   x(t+Δt) = x(t) + v(t)Δt + 1/2a(t)Δt^2
     // (ii)  a(t+Δt) = f(x(t+Δt))
@@ -204,13 +205,15 @@ void Gas::UpdateMovement(Molecule &mol) {
     const Vector2 newVelocity = mol.velocity * deltaTime;
     const Vector2 newAcceleration = mol.acceleration * halfTimeSq;
     mol.position += Vector2Add(newVelocity, newAcceleration);
-
+    
+    mol.color = ColorLerp(BLUE, RED, fabsf(newVelocity.x + newVelocity.y));
+    
     CheckCollision(mol);
 
     if(mol.collided) return;
 
     mol.acceleration = newAcceleration;
-    Vector2 nextAcceleration = mol.force/mol.mass;
+    Vector2 nextAcceleration = force/mol.mass;
     Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration*(deltaTime/2));
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration*(deltaTime/2));
 }

@@ -10,11 +10,12 @@
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
 #define CONTAINER_Y 200
-#define GRAVITY 9.8f
-#define RESTITUTION 1.0f
+#define RESTITUTION 0.5f
 #define MOLECULE_RADIUS 8.0f
 #define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
 #define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
+#define GRAVITY Vector2(0, 982.0f)
+#define ZERO_FORCE Vector2(0, 0)
 
 typedef struct Molecule {
     Vector2 force {};
@@ -66,7 +67,7 @@ class Gas {
         void Test();
         void Unload();
         void Update();
-        void UpdateMovement(Molecule& mol);
+        void UpdateMovement(Molecule& mol, Vector2 force);
         void CheckBounds(Molecule& mol);
         void CheckCollision(Molecule& mol);
         void CollideZone(Molecule& mol);

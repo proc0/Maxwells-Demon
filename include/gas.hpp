@@ -41,6 +41,7 @@ typedef struct Molecule {
 
 class Grid {
     std::vector<std::vector<std::vector<Molecule*>>> cells;
+    std::vector<std::vector<bool>> walls;
     Vector2 cellCount;
     float cellSize;
     int queryIds = 0;
@@ -49,15 +50,18 @@ class Grid {
         void Load(int gridWidth, int gridHeight, float _cellSize);
         Vector2 place(float x, float y) const;
         void add(Molecule* mol);
+        void addWall(Rectangle& wall);
         void remove(Molecule* mol);
         void update(Molecule* mol);
         void Render() const;
         void clear();
         std::vector<Molecule*> getZone(Molecule* mol);
+        bool getWalls(Molecule* mol);
 };
 
 class Gas {
     Molecule molecules[DENSITY];
+    Rectangle wallRect = { 400, 200, 20, 200 };
     Grid grid;
 
     public:

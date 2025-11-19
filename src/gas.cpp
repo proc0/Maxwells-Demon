@@ -70,6 +70,8 @@ void Gas::Populate() {
 
         grid.add(&molecules[i]);
     }
+
+    grid.addWall(wallRect);
 }
 
 void Gas::Render() const {
@@ -77,6 +79,7 @@ void Gas::Render() const {
     DrawRectangle(CONTAINER_X-3, CONTAINER_Y-3, CONTAINER_WIDTH+6, CONTAINER_HEIGHT+6, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
     
+    DrawRectangleRec(wallRect, BLACK);
     // grid.Render();
 
     for (const Molecule& mol : molecules) {
@@ -105,6 +108,12 @@ void Gas::Unload() {
 }
 
 void Gas::CheckBounds(Molecule& mol) {
+
+    if(grid.getWalls(&mol)){
+        if(CheckCollisionCircleRec(mol.position, mol.radius, wallRect)){
+            mol.velocity *= -1;
+        }
+    }
     
     if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X){
         mol.position.x = CONTAINER_WIDTH + CONTAINER_X - mol.radius;
@@ -230,10 +239,12 @@ void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {
 
     cellCount = Vector2(columns, rows);
     cells.resize(columns, std::vector<std::vector<Molecule*>>(rows));
+    walls.resize(columns, std::vector<bool>(rows));
 
     for (int x = 0; x < columns; ++x) {
         for (int y = 0; y < rows; ++y) {
             cells[x][y] = std::vector<Molecule*>();
+            walls[x][y] = false;
         }
     }
 }
@@ -254,6 +265,21 @@ void Grid::add(Molecule* mol) {
     Vector2 cell = place(mol->position.x, mol->position.y);
     cells[cell.x][cell.y].push_back(mol);
     mol->cell = cell;
+}
+
+void Grid::addWall(Rectangle& wall) {
+    Vector2 cell = place(wall.x, wall.y);
+    walls[cell.x][cell.y] = true;
+    int widthCells = std::ceil(wall.width / cellSize);
+    int heightCells = std::ceil(wall.height / cellSize);
+
+    for(int x = cell.x; x < widthCells; x++) {
+        walls[x][cell.y] = true;
+    }
+
+    for(int y = cell.y; y < heightCells; y++) {
+        walls[cell.x][y] = true;
+    }
 }
 
 void Grid::remove(Molecule* mol) {
@@ -302,6 +328,24 @@ std::vector<Molecule*> Grid::getZone(Molecule* mol) {
 
     return zone;
 }
+
+bool Grid::getWalls(Molecule* mol) {
+    Vector2 topLeft = place(mol->getLeft(), mol->getTop());
+    Vector2 bottomRight = place(mol->getRight(), mol->getBottom());
+
+    bool hasWall = false;
+    for (int x = topLeft.x; x <= bottomRight.x; ++x) {
+        for (int y = topLeft.y; y <= bottomRight.y; ++y) {
+            if(walls[x][y]){
+                hasWall = true;
+                break;
+            }
+        }
+    }
+
+    return hasWall;
+}
+
 
 void Grid::clear() {
     for (auto& col : cells) {

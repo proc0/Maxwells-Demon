@@ -52,13 +52,14 @@ void Gas::Populate() {
         Vector2 vel = { float(GetRandomValue(-100, 100)), float(GetRandomValue(-100, 100)) };
         molecules[i] = {
             // .force = {0, 0},
-            .force = { float(GetRandomValue(-20, 20)), float(GetRandomValue(-20, 20)) },
+            .force = GetRandomValue(0, 1) == 1 ? Vector2(float(GetRandomValue(-150, 150)), float(GetRandomValue(-150, 150))) : ZERO_FORCE,
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .origin = { 0.0f, 0.0f },
             .position = { float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH-3)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT-3)) },
-            .velocity = vel,
+            .velocity = {0, 0},
+            // .velocity = vel,
             .acceleration = { 0.0f, 0.0f },
-            .color = ColorLerp(BLUE, RED, fabsf(vel.x + vel.y)),
+            .color = ColorLerp(BLUE, RED, fabsf(vel.x) + fabsf(vel.y)),
             .mass = 1.0f,
             .radius = MOLECULE_RADIUS,
             .id = i,
@@ -108,17 +109,21 @@ void Gas::CheckBounds(Molecule& mol) {
     if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X){
         mol.position.x = CONTAINER_WIDTH + CONTAINER_X - mol.radius;
         mol.velocity.x *= -RESTITUTION;
+        mol.force.x *= -RESTITUTION;
     } else if(mol.position.x - mol.radius < CONTAINER_X) {
         mol.position.x = CONTAINER_X + mol.radius;
         mol.velocity.x *= -RESTITUTION;
+        mol.force.x *= -RESTITUTION;
     }
 
     if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y) {
         mol.position.y = CONTAINER_HEIGHT + CONTAINER_Y - mol.radius;
         mol.velocity.y *= -RESTITUTION;
+        mol.force.y *= -RESTITUTION;
     } else if(mol.position.y - mol.radius < CONTAINER_Y) {
         mol.position.y = CONTAINER_Y + mol.radius;
         mol.velocity.y *= -RESTITUTION;
+        mol.force.y *= -RESTITUTION;
     }
 }
 
@@ -206,14 +211,14 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     const Vector2 newAcceleration = mol.acceleration * halfTimeSq;
     mol.position += Vector2Add(newVelocity, newAcceleration);
     
-    mol.color = ColorLerp(BLUE, RED, fabsf(newVelocity.x + newVelocity.y));
+    mol.color = ColorLerp(BLUE, RED, fabsf(newVelocity.x) + fabsf(newVelocity.y));
     
     CheckCollision(mol);
 
     if(mol.collided) return;
 
     mol.acceleration = newAcceleration;
-    Vector2 nextAcceleration = force/mol.mass;
+    Vector2 nextAcceleration = (force + mol.force)/mol.mass;
     Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration*(deltaTime/2));
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration*(deltaTime/2));
 }

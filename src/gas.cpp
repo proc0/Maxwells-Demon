@@ -111,7 +111,23 @@ void Gas::CheckBounds(Molecule& mol) {
 
     if(grid.getWalls(&mol)){
         if(CheckCollisionCircleRec(mol.position, mol.radius, wallRect)){
-            mol.velocity *= -1;
+            if(mol.position.x + mol.radius > wallRect.width + wallRect.x){
+                mol.position.x = wallRect.width + wallRect.x + mol.radius;
+                mol.velocity.x *= -RESTITUTION;
+                mol.force.x *= -RESTITUTION;
+            } else if(mol.position.x - mol.radius < wallRect.x) {
+                mol.position.x = wallRect.x - mol.radius;
+                mol.velocity.x *= -RESTITUTION;
+                mol.force.x *= -RESTITUTION;
+            } else if(mol.position.y + mol.radius > wallRect.height + wallRect.y) {
+                mol.position.y = wallRect.height + wallRect.y + mol.radius;
+                mol.velocity.y *= -RESTITUTION;
+                mol.force.y *= -RESTITUTION;
+            } else if(mol.position.y - mol.radius < wallRect.y) {
+                mol.position.y = wallRect.y - mol.radius;
+                mol.velocity.y *= -RESTITUTION;
+                mol.force.y *= -RESTITUTION;
+            }
         }
     }
     
@@ -273,13 +289,12 @@ void Grid::addWall(Rectangle& wall) {
     int widthCells = std::ceil(wall.width / cellSize);
     int heightCells = std::ceil(wall.height / cellSize);
 
-    for(int x = cell.x; x < widthCells; x++) {
-        walls[x][cell.y] = true;
+    for(int x = cell.x; x < cell.x + widthCells; x++) {
+        for(int y = cell.y; y < cell.y + heightCells; y++) {
+            walls[x][y] = true;
+        }
     }
 
-    for(int y = cell.y; y < heightCells; y++) {
-        walls[cell.x][y] = true;
-    }
 }
 
 void Grid::remove(Molecule* mol) {

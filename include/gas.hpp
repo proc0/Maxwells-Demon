@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 50
+#define DENSITY 10
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
@@ -61,7 +61,7 @@ class Grid {
 
 class Gas {
     Molecule molecules[DENSITY];
-    Rectangle wallRect = { 400, 200, 20, 200 };
+    Rectangle wallRect = { 400, 200, 70, 200 };
     Grid grid;
 
     public:

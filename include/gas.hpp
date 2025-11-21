@@ -39,9 +39,16 @@ typedef struct Molecule {
     float getBottom() const { return position.y + radius; }
 } Molecule;
 
+typedef struct Wall {
+    Rectangle rect;
+    // std::vector<Vector2> cells;
+    int id;
+} Wall;
+
 class Grid {
     std::vector<std::vector<std::vector<Molecule*>>> cells;
-    std::vector<std::vector<bool>> walls;
+    std::vector<std::vector<std::vector<Wall*>>> wallCells;
+    std::vector<Wall> walls;
     Vector2 cellCount;
     float cellSize;
     int queryIds = 0;
@@ -50,19 +57,20 @@ class Grid {
         void Load(int gridWidth, int gridHeight, float _cellSize);
         Vector2 place(float x, float y) const;
         void add(Molecule* mol);
-        void addWall(Rectangle& wall);
+        void addWalls(std::vector<Rectangle>& wallRects);
+        void addWall(Wall* wall);
         void remove(Molecule* mol);
         void update(Molecule* mol);
         void Render() const;
         void clear();
         std::vector<Molecule*> getZone(Molecule* mol);
-        bool getWalls(Molecule* mol);
+        std::vector<Wall*> getWalls(Molecule* mol);
 };
 
 class Gas {
-    Molecule molecules[DENSITY];
-    Rectangle wallRect = { 400, 200, 70, 200 };
     Grid grid;
+    Molecule molecules[DENSITY];
+    std::vector<Rectangle> wallRects = { Rectangle({ 400, 200, 70, 200 }), Rectangle({ 200, 300, 30, 200 }) };
 
     public:
         void Load();

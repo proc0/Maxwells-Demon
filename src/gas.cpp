@@ -71,16 +71,16 @@ void Gas::Populate() {
         grid.add(&molecules[i]);
     }
 
-    grid.addWall(wallRect);
+    grid.addWalls(wallRects);
 }
 
 void Gas::Render() const {
     
     DrawRectangle(CONTAINER_X-3, CONTAINER_Y-3, CONTAINER_WIDTH+6, CONTAINER_HEIGHT+6, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
-    
-    DrawRectangleRec(wallRect, BLACK);
-    // grid.Render();
+
+    // DrawRectangleRec(wallRect, BLACK);
+    grid.Render();
 
     for (const Molecule& mol : molecules) {
         if(!mol.active) continue;
@@ -109,7 +109,10 @@ void Gas::Unload() {
 
 void Gas::CheckBounds(Molecule& mol) {
 
-    if(grid.getWalls(&mol)){
+    std::vector<Wall*> wallZone = grid.getWalls(&mol);
+
+    for(auto& wall: wallZone){
+        Rectangle wallRect = wall->rect;
         if(CheckCollisionCircleRec(mol.position, mol.radius, wallRect)){
             if(mol.position.x + mol.radius > wallRect.width + wallRect.x){
                 mol.position.x = wallRect.width + wallRect.x + mol.radius;
@@ -255,12 +258,12 @@ void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {
 
     cellCount = Vector2(columns, rows);
     cells.resize(columns, std::vector<std::vector<Molecule*>>(rows));
-    walls.resize(columns, std::vector<bool>(rows));
+    wallCells.resize(columns, std::vector<std::vector<Wall*>>(rows));
 
     for (int x = 0; x < columns; ++x) {
         for (int y = 0; y < rows; ++y) {
             cells[x][y] = std::vector<Molecule*>();
-            walls[x][y] = false;
+            wallCells[x][y] = std::vector<Wall*>();
         }
     }
 }
@@ -283,18 +286,33 @@ void Grid::add(Molecule* mol) {
     mol->cell = cell;
 }
 
-void Grid::addWall(Rectangle& wall) {
-    Vector2 cell = place(wall.x, wall.y);
-    walls[cell.x][cell.y] = true;
-    int widthCells = std::ceil(wall.width / cellSize);
-    int heightCells = std::ceil(wall.height / cellSize);
+void Grid::addWalls(std::vector<Rectangle>& wallRects) {
+    walls = std::vector<Wall>();
+
+    for(int i = 0; i < (int)wallRects.size(); i++) {
+        Wall wall = {
+            .rect = wallRects.at(i),
+            // .cells = std::vector<Vector2>(),
+            .id = i,
+        };
+        walls.push_back(wall);
+        addWall(&walls.back());
+    }
+}
+
+
+void Grid::addWall(Wall* wall) {
+    Vector2 cell = place(wall->rect.x, wall->rect.y);
+
+    int widthCells = std::ceil(wall->rect.width / cellSize);
+    int heightCells = std::ceil(wall->rect.height / cellSize);
 
     for(int x = cell.x; x < cell.x + widthCells; x++) {
         for(int y = cell.y; y < cell.y + heightCells; y++) {
-            walls[x][y] = true;
+            wallCells[x][y].push_back(wall);
+            // wall->cells.push_back(Vector2(x, y));
         }
     }
-
 }
 
 void Grid::remove(Molecule* mol) {
@@ -306,10 +324,13 @@ void Grid::remove(Molecule* mol) {
 }
 
 void Grid::Render() const {
-    for (int x = 0; x < cellCount.x; ++x) {
-        for (int y = 0; y < cellCount.y; ++y) {
-            DrawPixel(x*cellSize + CONTAINER_X, y*cellSize + CONTAINER_Y, RED);
-        }
+    // for (int x = 0; x < cellCount.x; ++x) {
+    //     for (int y = 0; y < cellCount.y; ++y) {
+    //         DrawPixel(x*cellSize + CONTAINER_X, y*cellSize + CONTAINER_Y, RED);
+    //     }
+    // }
+    for(const Wall &wall: walls) {
+        DrawRectangleRec(wall.rect, BLACK);
     }
 }
 
@@ -344,21 +365,32 @@ std::vector<Molecule*> Grid::getZone(Molecule* mol) {
     return zone;
 }
 
-bool Grid::getWalls(Molecule* mol) {
+std::vector<Wall*> Grid::getWalls(Molecule* mol) {
     Vector2 topLeft = place(mol->getLeft(), mol->getTop());
     Vector2 bottomRight = place(mol->getRight(), mol->getBottom());
 
-    bool hasWall = false;
+    std::vector<Wall*> wallZone;
+    std::vector<int> processed;
     for (int x = topLeft.x; x <= bottomRight.x; ++x) {
         for (int y = topLeft.y; y <= bottomRight.y; ++y) {
-            if(walls[x][y]){
-                hasWall = true;
-                break;
+            const auto& wallBounds = wallCells[x][y];
+            for(auto &wall : wallBounds) {
+                bool isProcessed = false;
+                for(int procId : processed){
+                    if(procId == wall->id){
+                        isProcessed = true;
+                        break;
+                    }
+                }
+                if(!isProcessed){
+                    wallZone.push_back(wall);
+                    processed.push_back(wall->id);
+                }
             }
         }
     }
 
-    return hasWall;
+    return wallZone;
 }
 
 

@@ -43,6 +43,7 @@ void Gas::Test() {
 }
 
 void Gas::Populate() {
+    grid.addWalls(wallRects);
 
     for(int i=0; i<DENSITY; i++){
         if(molecules[i].active) {
@@ -55,7 +56,7 @@ void Gas::Populate() {
             .force = GetRandomValue(0, 1) == 1 ? Vector2(float(GetRandomValue(-150, 150)), float(GetRandomValue(-150, 150))) : ZERO_FORCE,
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .origin = { 0.0f, 0.0f },
-            .position = { float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH-3)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT-3)) },
+            .position = Spawn(MOLECULE_RADIUS),
             .velocity = {0, 0},
             // .velocity = vel,
             .acceleration = { 0.0f, 0.0f },
@@ -70,8 +71,25 @@ void Gas::Populate() {
 
         grid.add(&molecules[i]);
     }
+}
 
-    grid.addWalls(wallRects);
+Vector2 Gas::Spawn(float radius) {
+    Vector2 position = { float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT)) };
+    int retries = 12;
+
+    while(retries >= 0) {
+        bool isIntersect = grid.checkTunneling(position, radius);
+        if(!isIntersect) break;
+
+        position = { float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT)) };
+        retries--;
+    }
+
+    if(grid.checkTunneling(position, radius)){
+        position = { CONTAINER_X + 10, CONTAINER_Y + 10 };
+    }
+
+    return position;
 }
 
 void Gas::Render() const {
@@ -101,6 +119,8 @@ void Gas::Update() {
         CollideZone(mol);
         grid.update(&mol);
     }
+
+    grid.updateWalls();
 }
 
 void Gas::Unload() {
@@ -287,8 +307,6 @@ void Grid::add(Molecule* mol) {
 }
 
 void Grid::addWalls(std::vector<Rectangle>& wallRects) {
-    walls = std::vector<Wall>();
-
     for(int i = 0; i < (int)wallRects.size(); i++) {
         Wall wall = {
             .rect = wallRects.at(i),
@@ -296,7 +314,11 @@ void Grid::addWalls(std::vector<Rectangle>& wallRects) {
             .id = i,
         };
         walls.push_back(wall);
-        addWall(&walls.back());
+        // addWall(&walls.back());
+    }
+
+    for(auto& wall : walls) {
+        addWall(&wall);
     }
 }
 
@@ -310,7 +332,7 @@ void Grid::addWall(Wall* wall) {
     for(int x = cell.x; x < cell.x + widthCells; x++) {
         for(int y = cell.y; y < cell.y + heightCells; y++) {
             wallCells[x][y].push_back(wall);
-            // wall->cells.push_back(Vector2(x, y));
+            wall->cells.push_back(Vector2(x, y));
         }
     }
 }
@@ -342,6 +364,18 @@ void Grid::update(Molecule* mol) {
         cells[newCell.x][newCell.y].push_back(mol);
     }
 }
+
+void Grid::updateWalls() {
+    Wall* wall = &walls[1];
+    wall->rect.x += 0.1;
+
+    for(auto& cell : wall->cells) {
+        wallCells[cell.x][cell.y].clear();
+    }
+    wall->cells.clear();
+
+    addWall(wall);
+}   
 
 std::vector<Molecule*> Grid::getZone(Molecule* mol) {
     Vector2 topLeft = place(mol->getLeft(), mol->getTop());
@@ -392,6 +426,18 @@ std::vector<Wall*> Grid::getWalls(Molecule* mol) {
 
     return wallZone;
 }
+
+bool Grid::checkTunneling(Vector2 position, float radius) {
+    bool isIntersect = false;
+    for(auto& wall : walls) {
+        if(CheckCollisionCircleRec(position, radius, wall.rect)){
+            isIntersect = true;
+            break;
+        }
+    }
+
+    return isIntersect;
+};
 
 
 void Grid::clear() {

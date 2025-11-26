@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 10
+#define DENSITY 50
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
@@ -41,7 +41,7 @@ typedef struct Molecule {
 
 typedef struct Wall {
     Rectangle rect;
-    // std::vector<Vector2> cells;
+    std::vector<Vector2> cells;
     int id;
 } Wall;
 
@@ -59,8 +59,10 @@ class Grid {
         void add(Molecule* mol);
         void addWalls(std::vector<Rectangle>& wallRects);
         void addWall(Wall* wall);
+        bool checkTunneling(Vector2 position, float radius);
         void remove(Molecule* mol);
         void update(Molecule* mol);
+        void updateWalls();
         void Render() const;
         void clear();
         std::vector<Molecule*> getZone(Molecule* mol);
@@ -70,12 +72,13 @@ class Grid {
 class Gas {
     Grid grid;
     Molecule molecules[DENSITY];
-    std::vector<Rectangle> wallRects = { Rectangle({ 400, 200, 70, 200 }), Rectangle({ 200, 300, 30, 200 }) };
+    std::vector<Rectangle> wallRects = { Rectangle({ 215, 300, 55, 100 }), Rectangle({ 400, 300, 130, 200 }), Rectangle({ 600, 300, 80, 80 }) };
 
     public:
         void Load();
         void Render() const;
         void Populate();
+        Vector2 Spawn(float radius);
         void Test();
         void Unload();
         void Update();

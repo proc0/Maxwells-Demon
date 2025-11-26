@@ -10,7 +10,9 @@ $appName = $pwd.Path | Split-Path -Leaf
 $platform = "Desktop"
 $buildType = "Debug"
 $buildPath = "build"
+$installPath = "dist"
 $shouldRun = $false
+$shouldInstall = $false
 $generator = "MinGW Makefiles"
 $otherArgs = @()
 
@@ -24,10 +26,13 @@ foreach ($arg in $args) {
         }
         $platform = "Web"
         $buildPath = "$buildPath-web"
+        $installPath = "$installPath-web"
     } elseif ($arg -eq "--release") {
         $buildType = "Release"
     } elseif ($arg -eq "--run") {
         $shouldRun = $true
+    } elseif ($arg -eq "--install") {
+        $shouldInstall = $true
     } else {
         $otherArgs += $arg
     }
@@ -70,20 +75,37 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 #Install
-# cmake --install $buildPath
+if ($shouldInstall) {
+    cmake --install $buildPath --component Runtime
+}
 
 #Run
 if ($shouldRun) {
     if($platform -eq "Web") {
         $appPath = "$buildPath\$appName.html"
+        $serveDir = $buildPath
+        if ($shouldInstall) {
+            $appPath = "$installPath\$appName.html"
+            $serveDir = $installPath
+        }
+
         if (-not (Test-Path $appPath)) {
             Write-Host "LAUNCH ERROR: $appPath not found."
             exit 1
         }
 
-        emrun $appPath
+        if($buildType -eq "Debug") {
+            emrun $appPath
+        } else {
+            Write-Host "NOTE: Web release version does not use --emrun, open http://localhost:8000/$appName.html in browser."
+            python -m http.server -d $serveDir
+        }
     } else {
         $appPath = ".\$buildPath\$appName.exe"
+        if ($shouldInstall) {
+            $appPath = ".\$installPath\$appName.exe"
+        }
+        
         if (-not (Test-Path $appPath)) {
             Write-Host "LAUNCH ERROR: $appPath not found."
             exit 1

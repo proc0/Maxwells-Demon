@@ -94,7 +94,7 @@ Vector2 Gas::Spawn(float radius) {
 
 void Gas::Render() const {
     
-    DrawRectangle(CONTAINER_X-3, CONTAINER_Y-3, CONTAINER_WIDTH+6, CONTAINER_HEIGHT+6, BLACK);
+    DrawRectangle(CONTAINER_X-15, CONTAINER_Y-15, CONTAINER_WIDTH+30, CONTAINER_HEIGHT+30, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
 
     // DrawRectangleRec(wallRect, BLACK);
@@ -367,14 +367,44 @@ void Grid::update(Molecule* mol) {
 
 void Grid::updateWalls() {
     Wall* wall = &walls[1];
-    wall->rect.x += 0.1;
-
-    for(auto& cell : wall->cells) {
-        wallCells[cell.x][cell.y].clear();
+    
+    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
+        isDoorClosing = true;
     }
-    wall->cells.clear();
 
-    addWall(wall);
+    if(isDoorClosing) {
+
+        if(doorFrame == 0 && wall->rect.y < DOOR_MAX_Y){
+            doorFrame = DOOR_OPEN_FRAMES;
+        }
+
+        if(doorFrame > 0) {
+            float displacement = EASE_OUT_EXPO((1/(float)doorFrame)*DOOR_OPEN_FRAMES);
+            wall->rect.y += displacement*10;
+            if(wall->rect.y >= DOOR_MAX_Y) {
+                wall->rect.y = DOOR_MAX_Y;
+                isDoorClosing = false;
+            }
+        }
+    }
+
+    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+        isDoorClosing = false;
+        
+        if(doorFrame == 0 && wall->rect.y > DOOR_MIN_Y){
+            doorFrame = DOOR_OPEN_FRAMES;
+        }
+
+        if(doorFrame > 0) {
+            float displacement = EASE_OUT_EXPO((1/(float)doorFrame)*DOOR_OPEN_FRAMES);
+            wall->rect.y -= displacement*10;
+            if(wall->rect.y <= DOOR_MIN_Y){
+                wall->rect.y = DOOR_MIN_Y;
+            }
+
+            doorFrame--;
+        }
+    }
 }   
 
 std::vector<Molecule*> Grid::getZone(Molecule* mol) {

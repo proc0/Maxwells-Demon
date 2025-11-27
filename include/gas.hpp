@@ -5,17 +5,23 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 50
+#define DENSITY 150
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
 #define CONTAINER_Y 200
+#define DOOR_MIN_Y 250.0f
+#define DOOR_MAX_Y 350.0f
+#define DOOR_OPEN_FRAMES 60
 #define RESTITUTION 0.8f
 #define MOLECULE_RADIUS 8.0f
 #define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
 #define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
 #define GRAVITY Vector2(0, 982.0f)
 #define ZERO_FORCE Vector2(0, 0)
+
+#define EASE_OUT_EXPO(x) (x >= 1 ? 1 : 1 - pow(2, -10 * x))
+
 
 typedef struct Molecule {
     Vector2 force {};
@@ -52,6 +58,8 @@ class Grid {
     Vector2 cellCount;
     float cellSize;
     int queryIds = 0;
+    int doorFrame = 0;
+    bool isDoorClosing = false;
 
     public:
         void Load(int gridWidth, int gridHeight, float _cellSize);
@@ -72,7 +80,7 @@ class Grid {
 class Gas {
     Grid grid;
     Molecule molecules[DENSITY];
-    std::vector<Rectangle> wallRects = { Rectangle({ 215, 300, 55, 100 }), Rectangle({ 400, 300, 130, 200 }), Rectangle({ 600, 300, 80, 80 }) };
+    std::vector<Rectangle> wallRects = { Rectangle({ 593, 200, 15, 150 }), Rectangle({ 593, 350, 15, 100 }), Rectangle({ 593, 450, 15, 150 }) };
 
     public:
         void Load();

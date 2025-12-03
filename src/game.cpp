@@ -34,7 +34,7 @@ void Game::Update(){
 
 void Game::Render() const {
     BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(DARKGRAY);
 
         gas.Render();
         

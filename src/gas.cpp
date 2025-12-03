@@ -1,7 +1,7 @@
 #include "gas.hpp"
 
 void Gas::Load() {
-    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS*3);
+    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS*4);
     Populate();
 }
 
@@ -51,16 +51,27 @@ void Gas::Populate() {
         }
         
         Vector2 vel = { float(GetRandomValue(-100, 100)), float(GetRandomValue(-100, 100)) };
+        bool isHot = GetRandomValue(0, 1) == 1;
+        Color color1 = isHot ? BEIGE : DARKBLUE;
+        Color color2 = isHot ? RED : BLUE;
+
+        float randNegX = float(GetRandomValue(-250, -150));
+        float randNegY = float(GetRandomValue(-250, -150));
+        float randPosX = float(GetRandomValue(150, 20));
+        float randPosY = float(GetRandomValue(150, 250));
+        Vector2 randForce = Vector2(GetRandomValue(0, 1) == 1 ? randNegX : randPosX, GetRandomValue(0, 1) == 1 ? randNegY : randPosY);
         molecules[i] = {
             // .force = {0, 0},
-            .force = GetRandomValue(0, 1) == 1 ? Vector2(float(GetRandomValue(-150, 150)), float(GetRandomValue(-150, 150))) : ZERO_FORCE,
+            .force = isHot ? randForce : ZERO_FORCE,
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .origin = { 0.0f, 0.0f },
             .position = Spawn(MOLECULE_RADIUS),
             .velocity = {0, 0},
             // .velocity = vel,
             .acceleration = { 0.0f, 0.0f },
-            .color = ColorLerp(BLUE, RED, fabsf(vel.x) + fabsf(vel.y)),
+            .color1 = color1,
+            .color2 = color2,
+            .color = ColorLerp(color1, color2, fabsf(vel.x) + fabsf(vel.y)),
             .mass = 1.0f,
             .radius = MOLECULE_RADIUS,
             .id = i,
@@ -134,23 +145,56 @@ void Gas::CheckBounds(Molecule& mol) {
     for(auto& wall: wallZone){
         Rectangle wallRect = wall->rect;
         if(CheckCollisionCircleRec(mol.position, mol.radius, wallRect)){
-            if(mol.position.x + mol.radius > wallRect.width + wallRect.x){
-                mol.position.x = wallRect.width + wallRect.x + mol.radius;
+
+            // if(mol.position.x + mol.radius > wallRect.width + wallRect.x){
+            //     mol.position.x = wallRect.x + wallRect.width + mol.radius;
+            //     mol.velocity.x *= -RESTITUTION;
+            //     mol.force.x *= -RESTITUTION;
+            // } else if(mol.position.x - mol.radius < wallRect.x) {
+            //     mol.position.x = wallRect.x - mol.radius;
+            //     mol.velocity.x *= -RESTITUTION;
+            //     mol.force.x *= -RESTITUTION;
+            // } else if(mol.position.y + mol.radius > wallRect.height + wallRect.y) {
+            //     mol.position.y = wallRect.height + wallRect.y + mol.radius;
+            //     mol.velocity.y *= -RESTITUTION;
+            //     mol.force.y *= -RESTITUTION;
+            // } else if(mol.position.y - mol.radius < wallRect.y) {
+            //     mol.position.y = wallRect.y - mol.radius;
+            //     mol.velocity.y *= -RESTITUTION;
+            //     mol.force.y *= -RESTITUTION;
+            // } else 
+
+
+            // if(mol.getBottom() > wallRect.y && mol.velocity.y > 0){
+            //     mol.position.y = wallRect.y - mol.radius - 2;
+            //     mol.velocity.y *= -RESTITUTION;
+            //     mol.force.y *= -RESTITUTION;
+            // } else if(mol.getTop() < wallRect.y + wallRect.height && mol.velocity.y < 0) {
+            //     mol.position.y = wallRect.y + wallRect.height + mol.radius + 2;
+            //     mol.velocity.y *= -RESTITUTION;
+            //     mol.force.y *= -RESTITUTION;
+            // } 
+            
+            if(mol.getRight() > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0){
+                mol.position.x = wallRect.x - mol.radius - 2;
                 mol.velocity.x *= -RESTITUTION;
                 mol.force.x *= -RESTITUTION;
-            } else if(mol.position.x - mol.radius < wallRect.x) {
-                mol.position.x = wallRect.x - mol.radius;
+            } else if(mol.getLeft() < wallRect.x + wallRect.width && mol.position.x > wallRect.x && mol.velocity.x < 0) {
+                mol.position.x = wallRect.x + wallRect.width + mol.radius + 2;
                 mol.velocity.x *= -RESTITUTION;
                 mol.force.x *= -RESTITUTION;
-            } else if(mol.position.y + mol.radius > wallRect.height + wallRect.y) {
-                mol.position.y = wallRect.height + wallRect.y + mol.radius;
-                mol.velocity.y *= -RESTITUTION;
-                mol.force.y *= -RESTITUTION;
-            } else if(mol.position.y - mol.radius < wallRect.y) {
-                mol.position.y = wallRect.y - mol.radius;
-                mol.velocity.y *= -RESTITUTION;
-                mol.force.y *= -RESTITUTION;
-            }
+            } 
+            
+            
+            // else if(mol.position.y > wallRect.height + wallRect.y) {
+            //     mol.position.y = wallRect.height + wallRect.y + mol.radius;
+            //     mol.velocity.y *= -RESTITUTION;
+            //     mol.force.y *= -RESTITUTION;
+            // } else if(mol.position.y < wallRect.y) {
+            //     mol.position.y = wallRect.y - mol.radius;
+            //     mol.velocity.y *= -RESTITUTION;
+            //     mol.force.y *= -RESTITUTION;
+            // }
         }
     }
     
@@ -259,16 +303,18 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     const Vector2 newAcceleration = mol.acceleration * halfTimeSq;
     mol.position += Vector2Add(newVelocity, newAcceleration);
     
-    mol.color = ColorLerp(BLUE, RED, fabsf(newVelocity.x) + fabsf(newVelocity.y));
-    
     CheckCollision(mol);
-
+    
     if(mol.collided) return;
-
+    
     mol.acceleration = newAcceleration;
     Vector2 nextAcceleration = (force + mol.force)/mol.mass;
     Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration*(deltaTime/2));
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration*(deltaTime/2));
+
+    Vector2 normalVel = Vector2Normalize(newVelocity);
+    mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y)/10));
+    // mol.color = ColorLerp(mol.color1, mol.color2, Vector2Length(normalVel)/2);
 }
 
 void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {
@@ -337,6 +383,22 @@ void Grid::addWall(Wall* wall) {
     }
 }
 
+void Grid::removeWall(Wall* wall) {
+    Vector2 cell = place(wall->rect.x, wall->rect.y);
+
+    int widthCells = std::ceil(wall->rect.width / cellSize);
+    int heightCells = std::ceil(wall->rect.height / cellSize);
+
+    for(int x = cell.x; x < cell.x + widthCells; x++) {
+        for(int y = cell.y; y < cell.y + heightCells; y++) {
+            auto& cellWalls = wallCells[x][y];
+
+            auto newEnd = std::remove(cellWalls.begin(), cellWalls.end(), wall);
+            cellWalls.erase(newEnd, cellWalls.end());
+        }
+    }
+}
+
 void Grid::remove(Molecule* mol) {
     const Vector2& cell = mol->cell;
     auto& cellMolecules = cells[cell.x][cell.y];
@@ -365,6 +427,11 @@ void Grid::update(Molecule* mol) {
     }
 }
 
+void Grid::updateWall(Wall* wall) {
+    removeWall(wall);
+    addWall(wall);
+}
+
 void Grid::updateWalls() {
     Wall* wall = &walls[1];
     
@@ -385,6 +452,7 @@ void Grid::updateWalls() {
                 wall->rect.y = DOOR_MAX_Y;
                 isDoorClosing = false;
             }
+            // addWall(wall);
         }
     }
 
@@ -401,6 +469,8 @@ void Grid::updateWalls() {
             if(wall->rect.y <= DOOR_MIN_Y){
                 wall->rect.y = DOOR_MIN_Y;
             }
+            // removeWall(wall);
+
 
             doorFrame--;
         }

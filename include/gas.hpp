@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 150
+#define DENSITY 80
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
@@ -14,7 +14,7 @@
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
 #define RESTITUTION 0.8f
-#define MOLECULE_RADIUS 8.0f
+#define MOLECULE_RADIUS 12.0f
 #define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
 #define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
 #define GRAVITY Vector2(0, 982.0f)
@@ -30,6 +30,8 @@ typedef struct Molecule {
     Vector2 velocity {};
     Vector2 acceleration {};
     Vector2 cell {};
+    Color color1;
+    Color color2;
     Color color;
     float mass = 0.0f;
     float radius = 0.0f;
@@ -67,9 +69,11 @@ class Grid {
         void add(Molecule* mol);
         void addWalls(std::vector<Rectangle>& wallRects);
         void addWall(Wall* wall);
+        void removeWall(Wall* wall);
         bool checkTunneling(Vector2 position, float radius);
         void remove(Molecule* mol);
         void update(Molecule* mol);
+        void updateWall(Wall* wall);
         void updateWalls();
         void Render() const;
         void clear();

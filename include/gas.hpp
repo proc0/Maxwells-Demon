@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 80
+#define DENSITY 30
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
@@ -13,6 +13,7 @@
 #define DOOR_MIN_Y 250.0f
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
+#define MAX_SPEED 500.0f
 #define RESTITUTION 0.8f
 #define MOLECULE_RADIUS 12.0f
 #define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
@@ -35,11 +36,12 @@ typedef struct Molecule {
     Color color;
     float mass = 0.0f;
     float radius = 0.0f;
+    float restitution = RESTITUTION;
     int id = 0;
+    int queryId = 0;
     bool active = false;
     bool collided = false;
-    int debounce = 60;
-    int queryId = 0;
+    bool isHot = false;
 
     float getLeft()   const { return position.x - radius; }
     float getRight()  const { return position.x + radius; }

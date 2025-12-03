@@ -19,7 +19,6 @@ void Gas::Test() {
         .id = 0,
         .active = true,
         .collided = false,
-        .debounce = 60,
     };
     
     grid.add(&molecules[0]);
@@ -36,7 +35,6 @@ void Gas::Test() {
         .id = 1,
         .active = true,
         .collided = false,
-        .debounce = 60,
     };
 
     grid.add(&molecules[1]);
@@ -74,10 +72,11 @@ void Gas::Populate() {
             .color = ColorLerp(color1, color2, fabsf(vel.x) + fabsf(vel.y)),
             .mass = 1.0f,
             .radius = MOLECULE_RADIUS,
+            .restitution = isHot ? 1.0f : RESTITUTION,
             .id = i,
             .active = true,
             .collided = false,
-            .debounce = 60,
+            .isHot = isHot
         };
 
         grid.add(&molecules[i]);
@@ -177,15 +176,29 @@ void Gas::CheckBounds(Molecule& mol) {
             
             if(mol.getRight() > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0){
                 mol.position.x = wallRect.x - mol.radius - 2;
-                mol.velocity.x *= -RESTITUTION;
-                mol.force.x *= -RESTITUTION;
+                mol.velocity.x *= -mol.restitution;
+                mol.force.x *= -mol.restitution;
             } else if(mol.getLeft() < wallRect.x + wallRect.width && mol.position.x > wallRect.x && mol.velocity.x < 0) {
                 mol.position.x = wallRect.x + wallRect.width + mol.radius + 2;
-                mol.velocity.x *= -RESTITUTION;
-                mol.force.x *= -RESTITUTION;
-            } 
-            
-            
+                mol.velocity.x *= -mol.restitution;
+                mol.force.x *= -mol.restitution;
+            } else if(mol.position.x + mol.radius > wallRect.width + wallRect.x){
+                // mol.position.x = wallRect.width + wallRect.x - mol.radius;
+                mol.velocity.x *= -mol.restitution;
+                // mol.force.x *= -mol.restitution;
+            } else if(mol.position.x - mol.radius < wallRect.x) {
+                // mol.position.x = wallRect.x + mol.radius;
+                mol.velocity.x *= -mol.restitution;
+                // mol.force.x *= -mol.restitution;
+            } else if(mol.position.y + mol.radius > wallRect.height + wallRect.y) {
+                // mol.position.y = wallRect.height + wallRect.y - mol.radius;
+                mol.velocity.y *= -mol.restitution;
+                // mol.force.y *= -mol.restitution;
+            } else if(mol.position.y - mol.radius < wallRect.y) {
+                // mol.position.y = wallRect.y + mol.radius;
+                mol.velocity.y *= -mol.restitution;
+                // mol.force.y *= -mol.restitution;
+            }
             // else if(mol.position.y > wallRect.height + wallRect.y) {
             //     mol.position.y = wallRect.height + wallRect.y + mol.radius;
             //     mol.velocity.y *= -RESTITUTION;
@@ -200,22 +213,22 @@ void Gas::CheckBounds(Molecule& mol) {
     
     if(mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X){
         mol.position.x = CONTAINER_WIDTH + CONTAINER_X - mol.radius;
-        mol.velocity.x *= -RESTITUTION;
-        mol.force.x *= -RESTITUTION;
+        mol.velocity.x *= -mol.restitution;
+        mol.force.x *= -mol.restitution;
     } else if(mol.position.x - mol.radius < CONTAINER_X) {
         mol.position.x = CONTAINER_X + mol.radius;
-        mol.velocity.x *= -RESTITUTION;
-        mol.force.x *= -RESTITUTION;
+        mol.velocity.x *= -mol.restitution;
+        mol.force.x *= -mol.restitution;
     }
 
     if(mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y) {
         mol.position.y = CONTAINER_HEIGHT + CONTAINER_Y - mol.radius;
-        mol.velocity.y *= -RESTITUTION;
-        mol.force.y *= -RESTITUTION;
+        mol.velocity.y *= -mol.restitution;
+        mol.force.y *= -mol.restitution;
     } else if(mol.position.y - mol.radius < CONTAINER_Y) {
         mol.position.y = CONTAINER_Y + mol.radius;
-        mol.velocity.y *= -RESTITUTION;
-        mol.force.y *= -RESTITUTION;
+        mol.velocity.y *= -mol.restitution;
+        mol.force.y *= -mol.restitution;
     }
 }
 
@@ -262,8 +275,8 @@ void Gas::Collide(Molecule& m1, Molecule* m2) {
     float tangentComponent2 = Vector2DotProduct(m2->velocity, unitTangent);
 
     float totalMass = m1.mass + m2->mass;
-    float normalVelocity1 = (RESTITUTION*normalComponent1*(m1.mass - m2->mass) + 2*m2->mass*normalComponent2)/totalMass;
-    float normalVelocity2 = (RESTITUTION*normalComponent2*(m2->mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
+    float normalVelocity1 = (m1.restitution*normalComponent1*(m1.mass - m2->mass) + 2*m2->mass*normalComponent2)/totalMass;
+    float normalVelocity2 = (m2->restitution*normalComponent2*(m2->mass - m1.mass) + 2*m1.mass*normalComponent1)/totalMass;
 
     Vector2 normalVectorVelocity1 = unitNormal * normalVelocity1;
     Vector2 normalVectorVelocity2 = unitNormal * normalVelocity2;
@@ -312,6 +325,21 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration*(deltaTime/2));
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration*(deltaTime/2));
 
+    if(mol.velocity.x > MAX_SPEED) {
+        mol.velocity.x = MAX_SPEED;
+    }
+
+    if(mol.velocity.x < -MAX_SPEED) {
+        mol.velocity.x = -MAX_SPEED;
+    }
+
+    if(mol.velocity.y > MAX_SPEED) {
+        mol.velocity.y = MAX_SPEED;
+    }
+
+    if(mol.velocity.y < -MAX_SPEED) {
+        mol.velocity.y = -MAX_SPEED;
+    }
     Vector2 normalVel = Vector2Normalize(newVelocity);
     mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y)/10));
     // mol.color = ColorLerp(mol.color1, mol.color2, Vector2Length(normalVel)/2);
@@ -435,7 +463,7 @@ void Grid::updateWall(Wall* wall) {
 void Grid::updateWalls() {
     Wall* wall = &walls[1];
     
-    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
+    if(IsKeyReleased(KEY_SPACE)){
         isDoorClosing = true;
     }
 
@@ -456,7 +484,7 @@ void Grid::updateWalls() {
         }
     }
 
-    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+    if(IsKeyDown(KEY_SPACE)){
         isDoorClosing = false;
         
         if(doorFrame == 0 && wall->rect.y > DOOR_MIN_Y){

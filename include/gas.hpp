@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 30
+#define DENSITY 3
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 200
@@ -83,9 +83,27 @@ class Grid {
         std::vector<Wall*> getWalls(Molecule* mol);
 };
 
+
+typedef struct Spring {
+    Molecule* molA;
+    Molecule* molB;
+    Vector2 force;
+    float restLength;
+    float stiffness;
+    float damping = 0.05;
+    
+    // Spring(Molecule _molA, Molecule _molB, float _restLength, float _stiffness):
+    // molA(_molA), molB(_molB), restLength(_restLength), stiffness(_stiffness) {}
+    // ~Spring() = default;
+
+    void update();
+} Spring;
+
 class Gas {
     Grid grid;
     Molecule molecules[DENSITY];
+    Molecule springMols[4];
+    std::vector<Spring> springs;
     std::vector<Rectangle> wallRects = { Rectangle({ 593, 200, 15, 150 }), Rectangle({ 593, 350, 15, 100 }), Rectangle({ 593, 450, 15, 150 }) };
 
     public:
@@ -103,3 +121,4 @@ class Gas {
         void Collide(Molecule& m1, Molecule* m2);
         void Repulse(Molecule& m1, Molecule* m2);
 };
+

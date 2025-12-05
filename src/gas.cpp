@@ -81,6 +81,65 @@ void Gas::Populate() {
 
         grid.add(&molecules[i]);
     }
+
+    for(int n=0; n<4; n++){
+        Molecule m = {
+            // .force = {0, 0},
+            .force = ZERO_FORCE,
+            // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
+            .origin = { 0.0f, 0.0f },
+            .position = { 60 + 2*n, 60 + 2*n },
+            .velocity = {0, 0},
+            // .velocity = vel,
+            .acceleration = { 0.0f, 0.0f },
+            .color1 = GREEN,
+            .color2 = MAGENTA,
+            .color = GREEN,
+            .mass = 1.0f,
+            .radius = MOLECULE_RADIUS,
+            .restitution = RESTITUTION,
+            .id = n,
+            .active = true,
+            .collided = false,
+            .isHot = false
+        };
+
+        springMols[n] = m;
+
+        // grid.add(&m);
+    }
+
+    for(int n=0; n<3; n++){
+        Spring spr = {
+            .molA = &springMols[n],
+            .molB = &springMols[n+1],
+            .restLength = float(GetRandomValue(40, 80)),
+            .stiffness = 0.03
+        };
+
+        springs.emplace_back(spr);
+    }
+
+    springs.emplace_back((Spring){
+        .molA = &springMols[0],
+        .molB = &springMols[3],
+        .restLength = float(GetRandomValue(40, 80)),
+        .stiffness = 0.03
+    });
+
+    springs.emplace_back((Spring){
+        .molA = &springMols[1],
+        .molB = &springMols[3],
+        .restLength = float(GetRandomValue(40, 80)),
+        .stiffness = 0.03
+    });
+
+    springs.emplace_back((Spring){
+        .molA = &springMols[2],
+        .molB = &springMols[0],
+        .restLength = float(GetRandomValue(40, 80)),
+        .stiffness = 0.03
+    });
 }
 
 Vector2 Gas::Spawn(float radius) {
@@ -115,6 +174,16 @@ void Gas::Render() const {
 
         DrawCircle(mol.position.x, mol.position.y, mol.radius, mol.color);
     }
+
+    for (const Molecule& mol : springMols) {
+        if(!mol.active) continue;
+
+        DrawCircle(mol.position.x, mol.position.y, mol.radius, mol.color);
+    }
+
+    for (const Spring& spr : springs){
+        DrawLineV(spr.molA->position, spr.molB->position, BLACK);
+    }
 }
 
 void Gas::Update() {
@@ -123,6 +192,8 @@ void Gas::Update() {
     //         mol.position = { x: float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH-3)), y: float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT-3)) };
     //     }
     // }
+
+
     for (Molecule& mol : molecules) {
         CheckBounds(mol);
         UpdateMovement(mol, ZERO_FORCE);
@@ -131,6 +202,18 @@ void Gas::Update() {
     }
 
     grid.updateWalls();
+
+    for(Spring& spr : springs){
+        spr.update();
+        UpdateMovement(*spr.molA, Vector2Negate(spr.force));
+        UpdateMovement(*spr.molB, spr.force);
+    }
+
+    for(auto& mSpr : springMols) {
+        CheckBounds(mSpr);
+        // CollideZone(mSpr);
+        // grid.update(&mSpr);
+    }
 }
 
 void Gas::Unload() {
@@ -343,6 +426,22 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     Vector2 normalVel = Vector2Normalize(newVelocity);
     mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y)/10));
     // mol.color = ColorLerp(mol.color1, mol.color2, Vector2Length(normalVel)/2);
+}
+
+void Spring::update(){
+    Vector2 d = Vector2Subtract(molA->position, molB->position);
+
+    float dist = sqrt(d.x*d.x + d.y*d.y);
+
+    float deform = dist - restLength;
+
+    float restore = stiffness * deform;
+
+    Vector2 f = (d / dist) * restore;
+
+    Vector2 damp = Vector2Subtract(molA->velocity, molB->velocity)*damping;
+
+    force = f + damp;
 }
 
 void Grid::Load(int gridWidth, int gridHeight, float _cellSize) {

@@ -49,6 +49,7 @@ typedef struct Molecule
     bool active = false;
     bool collided = false;
     bool isHot = false;
+    bool isLeft = false;
     bool isCounted = false;
 
     float getLeft() const { return position.x - radius; }
@@ -69,9 +70,7 @@ class Grid
     std::vector<std::vector<std::vector<Molecule *>>> cells;
     std::vector<std::vector<std::vector<Wall *>>> wallCells;
     std::vector<Wall> walls;
-    Rectangle leftSensor = Rectangle({615, 350, 10, 100});
-    Rectangle sensor = Rectangle({635, 350, 10, 100});
-    Rectangle rightSensor = Rectangle({655, 350, 10, 100});
+    Rectangle sensor = Rectangle({610, 300, 60, 200});
     Vector2 cellCount;
     float cellSize;
     int queryIds = 0;
@@ -86,7 +85,6 @@ public:
     void addWall(Wall *wall);
     void removeWall(Wall *wall);
     bool checkSensor(Molecule &mol, Section section);
-    bool checkSensorCleared(Molecule &mol, Section section);
     bool checkTunneling(Vector2 position, float radius);
     void remove(Molecule *mol);
     void update(Molecule *mol);

@@ -94,6 +94,7 @@ void Gas::Populate()
             }
             else
             {
+                molecules[i].isLeft = true;
                 leftChamberHotCount++;
             }
         }
@@ -105,6 +106,7 @@ void Gas::Populate()
             }
             else
             {
+                molecules[i].isLeft = true;
                 leftChamberCoolCount++;
             }
         }
@@ -176,7 +178,37 @@ void Gas::Update()
         grid.update(&mol);
     }
 
+    int _rightChamberHotCount = 0;
+    int _rightChamberCoolCount = 0;
+    int _leftChamberHotCount = 0;
+    int _leftChamberCoolCount = 0;
+    for (Molecule &mol : molecules)
+    {
+        if (mol.isHot && mol.isLeft)
+        {
+            _leftChamberHotCount++;
+        }
+        else if (mol.isHot && !mol.isLeft)
+        {
+            _rightChamberHotCount++;
+        }
+        else if (!mol.isHot && mol.isLeft)
+        {
+            _leftChamberCoolCount++;
+        }
+        else if (!mol.isHot && !mol.isLeft)
+        {
+            _rightChamberCoolCount++;
+        }
+    }
+    rightChamberHotCount = _rightChamberHotCount;
+    rightChamberCoolCount = _rightChamberCoolCount;
+    leftChamberHotCount = _leftChamberHotCount;
+    leftChamberCoolCount = _leftChamberCoolCount;
+
     grid.updateWalls();
+
+    completion = calculateCompletion();
 }
 
 void Gas::Unload()
@@ -250,51 +282,18 @@ void Gas::CheckBounds(Molecule &mol)
         mol.force.y *= -mol.restitution;
     }
 
-    if (mol.isCounted && grid.checkSensorCleared(mol, Center))
-    {
-        if (mol.velocity.x < 0 && grid.checkSensorCleared(mol, Left) || mol.velocity.x > 0 && grid.checkSensorCleared(mol, Right))
-        {
-            mol.isCounted = false;
-        }
-    }
-    else if (grid.checkSensor(mol, Center))
+    if (grid.checkSensor(mol, Center))
     {
         mol.isCounted = true;
-        if (mol.velocity.x > 0)
+        if (mol.position.x > GetScreenWidth() / 2)
         {
-            if (mol.isHot)
-            {
-                leftChamberHotCount--;
-                rightChamberHotCount++;
-            }
-            else
-            {
-                leftChamberCoolCount--;
-                rightChamberCoolCount++;
-            }
+            mol.isLeft = false;
         }
         else
         {
-            if (mol.isHot)
-            {
-                rightChamberHotCount--;
-                leftChamberHotCount++;
-            }
-            else
-            {
-                rightChamberCoolCount--;
-                leftChamberCoolCount++;
-            }
+            mol.isLeft = true;
         }
-
-        completion = calculateCompletion();
     }
-
-    // clear sensor
-    // if (mol.velocity.x > 0 && grid.checkSensorCleared(mol, Right) || mol.velocity.x < 0 && grid.checkSensorCleared(mol, Left))
-    // {
-    //     mol.isCounted = false;
-    // }
 }
 
 void Gas::CheckCollision(Molecule &mol)
@@ -568,6 +567,8 @@ void Grid::Render() const
     //         DrawPixel(x*cellSize + CONTAINER_X, y*cellSize + CONTAINER_Y, RED);
     //     }
     // }
+    // DrawRectangleRec(sensor, RED);
+
     for (const Wall &wall : walls)
     {
         DrawRectangleRec(wall.rect, BLACK);
@@ -725,58 +726,24 @@ bool Grid::checkTunneling(Vector2 position, float radius)
 bool Grid::checkSensor(Molecule &mol, Section section)
 {
     Vector2 molCell = place(mol.position.x, mol.position.y);
-    int rectCenter = 640;
-    if (section == Left)
-    {
-        rectCenter = 620;
-    }
-    else if (section == Right)
-    {
-        rectCenter = 660;
-    }
-    Vector2 cellsCenter = place(rectCenter, 450); // sensor rect center
+    // Vector2 cellsCenter = place(640, 450); // sensor rect center
+    Vector2 sensorCell = place(sensor.x, sensor.y);
+
+    int widthCells = std::ceil(sensor.width / cellSize);
+    int heightCells = std::ceil(sensor.height / cellSize);
 
     bool isDetected = false;
-    if (molCell.x == cellsCenter.x || molCell.x == cellsCenter.x - 1 || molCell.x == cellsCenter.x + 1)
+    for (int x = molCell.x; x < molCell.x + widthCells; x++)
     {
-        if (molCell.y == cellsCenter.y || molCell.y == cellsCenter.y - 1 || molCell.y == cellsCenter.y + 1)
+        for (int y = molCell.y; y < molCell.y + heightCells; y++)
         {
-            switch (section)
-            {
-            case Left:
-                isDetected = CheckCollisionCircleRec(mol.position, mol.radius, leftSensor);
-            case Right:
-                isDetected = CheckCollisionCircleRec(mol.position, mol.radius, rightSensor);
-            default:
-                isDetected = CheckCollisionCircleRec(mol.position, mol.radius, sensor);
-            }
+            isDetected = CheckCollisionCircleRec(mol.position, mol.radius, sensor);
         }
     }
 
     return isDetected;
 }
 
-bool Grid::checkSensorCleared(Molecule &mol, Section section)
-{
-    Rectangle sensorRect = sensor;
-    switch (section)
-    {
-    case Left:
-        sensorRect = leftSensor;
-    case Right:
-        sensorRect = rightSensor;
-    default:
-        sensorRect = sensor;
-    }
-
-    bool hasCleared = false;
-    if ((mol.velocity.x > 0 && mol.position.x > sensorRect.x + sensorRect.width + mol.radius * 2) || (mol.velocity.x < 0 && mol.position.x < sensorRect.x - mol.radius * 2))
-    {
-        hasCleared = true;
-    }
-
-    return hasCleared;
-}
 void Grid::clear()
 {
     for (auto &col : cells)

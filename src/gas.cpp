@@ -88,6 +88,7 @@ void Gas::Populate()
 
         if (molecules[i].isHot)
         {
+            totalHotCount++;
             if (molecules[i].position.x > GetScreenWidth() / 2)
             {
                 rightChamberHotCount++;
@@ -100,6 +101,7 @@ void Gas::Populate()
         }
         else
         {
+            totalCoolCount++;
             if (molecules[i].position.x > GetScreenWidth() / 2)
             {
                 rightChamberCoolCount++;
@@ -112,7 +114,7 @@ void Gas::Populate()
         }
     }
 
-    completion = calculateCompletion();
+    entropy = calculateBoltzmannEntropy();
 }
 
 Vector2 Gas::Spawn(float radius)
@@ -157,7 +159,7 @@ void Gas::Render() const
 
     const char *leftCount = TextFormat("Left: %d/%d", leftChamberCoolCount, leftChamberHotCount);
     const char *rightCount = TextFormat("Right: %d/%d", rightChamberCoolCount, rightChamberHotCount);
-    const char *countRatio = TextFormat("Entropy: %f", completion);
+    const char *countRatio = TextFormat("Entropy: %f", entropy);
     DrawText(leftCount, 50, 10, 20, BLACK);
     DrawText(rightCount, 850, 10, 20, BLACK);
     DrawText(countRatio, 630, 10, 20, BLACK);
@@ -208,7 +210,7 @@ void Gas::Update()
 
     grid.updateWalls();
 
-    completion = calculateCompletion();
+    entropy = calculateBoltzmannEntropy();
 }
 
 void Gas::Unload()
@@ -282,7 +284,7 @@ void Gas::CheckBounds(Molecule &mol)
         mol.force.y *= -mol.restitution;
     }
 
-    if (grid.checkSensor(mol, Center))
+    if (grid.checkSensor(mol))
     {
         mol.isCounted = true;
         if (mol.position.x > GetScreenWidth() / 2)
@@ -450,6 +452,42 @@ float Gas::calculateCompletion() const
     }
 
     return (leftChamberRatio + rightChamberRatio) / 2;
+}
+
+float Gas::calculateShannonEntropy() const
+{
+    // Stirling Approx. : n*(N!) ≈ N*lnN − N
+    // This has negative results (error approx.) for small numbers
+    float p = float(leftChamberHotCount) / float(totalHotCount);
+    float q = float(rightChamberHotCount) / float(totalHotCount);
+    float r = float(leftChamberCoolCount) / float(totalCoolCount);
+    float t = float(rightChamberCoolCount) / float(totalCoolCount);
+
+    float leftHotMember = p != 1 && p != 0 ? float(totalHotCount) * (p * log(p) + (1 - p) * log(1 - p)) : 0;
+    float leftCoolMember = r != 1 && r != 0 ? float(totalCoolCount) * (r * log(r) + (1 - r) * log(1 - r)) : 0;
+    float leftEntropy = leftHotMember == 0 ? leftCoolMember : -leftHotMember - leftCoolMember;
+
+    float rightHotMember = q != 1 && q != 0 ? float(totalHotCount) * (q * log(q) + (1 - q) * log(1 - q)) : 0;
+    float rightCoolMember = t != 1 && t != 0 ? float(totalCoolCount) * (t * log(t) + (1 - t) * log(1 - t)) : 0;
+    float rightEntropy = rightHotMember == 0 ? rightCoolMember : -rightHotMember - rightCoolMember;
+
+    return leftEntropy + rightEntropy;
+}
+
+float factorial(const int n)
+{
+    float f = 1;
+    for (int i = 1; i <= n; ++i)
+        f *= i;
+    return f;
+}
+
+float Gas::calculateBoltzmannEntropy() const
+{
+    float hotEntropy = factorial(float(totalHotCount)) / (factorial(float(leftChamberHotCount)) * factorial(float(rightChamberHotCount)));
+    float coldEntropy = factorial(float(totalCoolCount)) / (factorial(float(leftChamberCoolCount)) * factorial(float(rightChamberCoolCount)));
+
+    return log(hotEntropy * coldEntropy);
 }
 
 void Grid::Load(int gridWidth, int gridHeight, float _cellSize)
@@ -723,9 +761,9 @@ bool Grid::checkTunneling(Vector2 position, float radius)
     return isIntersect;
 };
 
-bool Grid::checkSensor(Molecule &mol, Section section)
+bool Grid::checkSensor(Molecule &mol)
 {
-    Vector2 molCell = place(mol.position.x, mol.position.y);
+    // Vector2 molCell = place(mol.position.x, mol.position.y);
     // Vector2 cellsCenter = place(640, 450); // sensor rect center
     Vector2 sensorCell = place(sensor.x, sensor.y);
 
@@ -733,9 +771,9 @@ bool Grid::checkSensor(Molecule &mol, Section section)
     int heightCells = std::ceil(sensor.height / cellSize);
 
     bool isDetected = false;
-    for (int x = molCell.x; x < molCell.x + widthCells; x++)
+    for (int x = sensorCell.x; x < sensorCell.x + widthCells; x++)
     {
-        for (int y = molCell.y; y < molCell.y + heightCells; y++)
+        for (int y = sensorCell.y; y < sensorCell.y + heightCells; y++)
         {
             isDetected = CheckCollisionCircleRec(mol.position, mol.radius, sensor);
         }

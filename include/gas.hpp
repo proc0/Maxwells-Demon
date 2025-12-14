@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 5
+#define DENSITY 15
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 240
@@ -22,13 +22,6 @@
 #define ZERO_FORCE Vector2(0, 0)
 
 #define EASE_OUT_EXPO(x) (x >= 1 ? 1 : 1 - pow(2, -10 * x))
-
-typedef enum Section
-{
-    Left,
-    Center,
-    Right
-} Section;
 
 typedef struct Molecule
 {
@@ -84,7 +77,7 @@ public:
     void addWalls(std::vector<Rectangle> &wallRects);
     void addWall(Wall *wall);
     void removeWall(Wall *wall);
-    bool checkSensor(Molecule &mol, Section section);
+    bool checkSensor(Molecule &mol);
     bool checkTunneling(Vector2 position, float radius);
     void remove(Molecule *mol);
     void update(Molecule *mol);
@@ -105,7 +98,10 @@ class Gas
     int rightChamberCoolCount = 0;
     int leftChamberHotCount = 0;
     int leftChamberCoolCount = 0;
+    int totalHotCount = 0;
+    int totalCoolCount = 0;
     float completion = 0.0f;
+    float entropy = 0.0f;
 
 public:
     void Load();
@@ -122,4 +118,6 @@ public:
     void Collide(Molecule &m1, Molecule *m2);
     void Repulse(Molecule &m1, Molecule *m2);
     float calculateCompletion() const;
+    float calculateShannonEntropy() const;
+    float calculateBoltzmannEntropy() const;
 };

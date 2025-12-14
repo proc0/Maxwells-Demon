@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define DENSITY 30
+#define DENSITY 15
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 240
@@ -42,6 +42,8 @@ typedef struct Molecule
     bool active = false;
     bool collided = false;
     bool isHot = false;
+    bool isLeft = false;
+    bool isCounted = false;
 
     float getLeft() const { return position.x - radius; }
     float getRight() const { return position.x + radius; }
@@ -61,6 +63,7 @@ class Grid
     std::vector<std::vector<std::vector<Molecule *>>> cells;
     std::vector<std::vector<std::vector<Wall *>>> wallCells;
     std::vector<Wall> walls;
+    Rectangle sensor = Rectangle({610, 300, 60, 200});
     Vector2 cellCount;
     float cellSize;
     int queryIds = 0;
@@ -74,6 +77,7 @@ public:
     void addWalls(std::vector<Rectangle> &wallRects);
     void addWall(Wall *wall);
     void removeWall(Wall *wall);
+    bool checkSensor(Molecule &mol);
     bool checkTunneling(Vector2 position, float radius);
     void remove(Molecule *mol);
     void update(Molecule *mol);
@@ -90,6 +94,15 @@ class Gas
     Grid grid;
     Molecule molecules[DENSITY];
     std::vector<Rectangle> wallRects = {Rectangle({633, 200, 15, 150}), Rectangle({633, 350, 15, 100}), Rectangle({633, 450, 15, 150})};
+    int rightChamberHotCount = 0;
+    int rightChamberCoolCount = 0;
+    int leftChamberHotCount = 0;
+    int leftChamberCoolCount = 0;
+    int totalHotCount = 0;
+    int totalCoolCount = 0;
+    float completion = 0.0f;
+    float entropy = 0.0f;
+    float maxEntropy = 0.0f;
 
 public:
     void Load();
@@ -105,4 +118,6 @@ public:
     void CollideZone(Molecule &mol);
     void Collide(Molecule &m1, Molecule *m2);
     void Repulse(Molecule &m1, Molecule *m2);
+    float calculateShannonEntropy() const;
+    float calculateBoltzmannEntropy(int leftHotCount, int rightHotCount, int leftColdCount, int rightColdCount) const;
 };

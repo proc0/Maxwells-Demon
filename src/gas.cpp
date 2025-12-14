@@ -172,7 +172,7 @@ void Gas::Render() const
     DrawText(maxEntText, 330, 10, 20, BLACK);
 
     Color barColor = completion < 0.5 ? GREEN : RED;
-    DrawRectangle(330, 45, 500 * completion, 20, barColor);
+    DrawRectangle(330, 45, 500 * completion, 15, barColor);
 }
 
 void Gas::Update()

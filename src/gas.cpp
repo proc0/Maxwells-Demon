@@ -46,6 +46,7 @@ void Gas::Populate()
 {
     grid.addWalls(wallRects);
 
+    int maxHotMoleculates = float(DENSITY) / 2;
     for (int i = 0; i < DENSITY; i++)
     {
         if (molecules[i].active)
@@ -54,7 +55,7 @@ void Gas::Populate()
         }
 
         Vector2 vel = {float(GetRandomValue(-100, 100)), float(GetRandomValue(-100, 100))};
-        bool isHot = GetRandomValue(0, 1) == 1;
+        bool isHot = totalHotCount < maxHotMoleculates ? GetRandomValue(0, 1) == 1 : false;
 
         Color color1 = isHot ? BEIGE : DARKBLUE;
         Color color2 = isHot ? RED : BLUE;
@@ -114,7 +115,11 @@ void Gas::Populate()
         }
     }
 
-    entropy = calculateBoltzmannEntropy();
+    float halfHotCount = float(totalHotCount) / 2;
+    float halfColdCount = float(totalCoolCount) / 2;
+    maxEntropy = calculateBoltzmannEntropy(halfHotCount, totalHotCount - halfHotCount, halfColdCount, totalCoolCount - halfColdCount);
+    entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
+    completion = entropy / maxEntropy;
 }
 
 Vector2 Gas::Spawn(float radius)
@@ -159,10 +164,15 @@ void Gas::Render() const
 
     const char *leftCount = TextFormat("Left: %d/%d", leftChamberCoolCount, leftChamberHotCount);
     const char *rightCount = TextFormat("Right: %d/%d", rightChamberCoolCount, rightChamberHotCount);
-    const char *countRatio = TextFormat("Entropy: %f", entropy);
+    const char *entText = TextFormat("Entropy: %f", entropy);
+    const char *maxEntText = TextFormat("Max Entropy: %f", maxEntropy);
     DrawText(leftCount, 50, 10, 20, BLACK);
     DrawText(rightCount, 850, 10, 20, BLACK);
-    DrawText(countRatio, 630, 10, 20, BLACK);
+    DrawText(entText, 630, 10, 20, BLACK);
+    DrawText(maxEntText, 330, 10, 20, BLACK);
+
+    Color barColor = completion < 0.5 ? GREEN : RED;
+    DrawRectangle(330, 45, 500 * completion, 20, barColor);
 }
 
 void Gas::Update()
@@ -210,7 +220,8 @@ void Gas::Update()
 
     grid.updateWalls();
 
-    entropy = calculateBoltzmannEntropy();
+    entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
+    completion = entropy / maxEntropy;
 }
 
 void Gas::Unload()
@@ -428,32 +439,6 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force)
     // mol.color = ColorLerp(mol.color1, mol.color2, Vector2Length(normalVel)/2);
 }
 
-float Gas::calculateCompletion() const
-{
-
-    float leftChamberRatio = 0.0f;
-    if (leftChamberCoolCount > leftChamberHotCount)
-    {
-        leftChamberRatio = float(leftChamberHotCount) / float(leftChamberCoolCount);
-    }
-    else if (leftChamberCoolCount < leftChamberHotCount)
-    {
-        leftChamberRatio = float(leftChamberCoolCount) / float(leftChamberHotCount);
-    }
-
-    float rightChamberRatio = 0.0f;
-    if (rightChamberCoolCount > rightChamberHotCount)
-    {
-        rightChamberRatio = float(rightChamberHotCount) / float(rightChamberCoolCount);
-    }
-    else if (rightChamberCoolCount < rightChamberHotCount)
-    {
-        rightChamberRatio = float(rightChamberCoolCount) / float(rightChamberHotCount);
-    }
-
-    return (leftChamberRatio + rightChamberRatio) / 2;
-}
-
 float Gas::calculateShannonEntropy() const
 {
     // Stirling Approx. : n*(N!) ≈ N*lnN − N
@@ -482,10 +467,12 @@ float factorial(const int n)
     return f;
 }
 
-float Gas::calculateBoltzmannEntropy() const
+float Gas::calculateBoltzmannEntropy(int leftHotCount, int rightHotCount, int leftColdCount, int rightColdCount) const
 {
-    float hotEntropy = factorial(float(totalHotCount)) / (factorial(float(leftChamberHotCount)) * factorial(float(rightChamberHotCount)));
-    float coldEntropy = factorial(float(totalCoolCount)) / (factorial(float(leftChamberCoolCount)) * factorial(float(rightChamberCoolCount)));
+    float totalCountHot = leftHotCount + rightHotCount;
+    float totalCountCold = leftColdCount + rightColdCount;
+    float hotEntropy = factorial(float(totalCountHot)) / (factorial(float(leftHotCount)) * factorial(float(rightHotCount)));
+    float coldEntropy = factorial(float(totalCountCold)) / (factorial(float(leftColdCount)) * factorial(float(rightColdCount)));
 
     return log(hotEntropy * coldEntropy);
 }

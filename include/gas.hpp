@@ -102,6 +102,7 @@ class Gas
     int totalCoolCount = 0;
     float completion = 0.0f;
     float entropy = 0.0f;
+    float maxEntropy = 0.0f;
 
 public:
     void Load();
@@ -117,7 +118,6 @@ public:
     void CollideZone(Molecule &mol);
     void Collide(Molecule &m1, Molecule *m2);
     void Repulse(Molecule &m1, Molecule *m2);
-    float calculateCompletion() const;
     float calculateShannonEntropy() const;
-    float calculateBoltzmannEntropy() const;
+    float calculateBoltzmannEntropy(int leftHotCount, int rightHotCount, int leftColdCount, int rightColdCount) const;
 };

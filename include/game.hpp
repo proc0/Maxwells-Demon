@@ -4,7 +4,7 @@
 #include <emscripten.h>
 #endif
 #include <raylib.h>
-#include <string>
+// #include <string>
 
 #include "config.h"
 #include "gas.hpp"

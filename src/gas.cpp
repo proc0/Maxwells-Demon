@@ -90,7 +90,7 @@ void Gas::Populate()
         if (molecules[i].isHot)
         {
             totalHotCount++;
-            if (molecules[i].position.x > GetScreenWidth() / 2)
+            if (molecules[i].position.x > float(GetScreenWidth()) / 2)
             {
                 rightChamberHotCount++;
             }
@@ -103,7 +103,7 @@ void Gas::Populate()
         else
         {
             totalCoolCount++;
-            if (molecules[i].position.x > GetScreenWidth() / 2)
+            if (molecules[i].position.x > float(GetScreenWidth()) / 2)
             {
                 rightChamberCoolCount++;
             }
@@ -298,7 +298,7 @@ void Gas::CheckBounds(Molecule &mol)
     if (grid.checkSensor(mol))
     {
         mol.isCounted = true;
-        if (mol.position.x > GetScreenWidth() / 2)
+        if (mol.position.x > float(GetScreenWidth()) / 2)
         {
             mol.isLeft = false;
         }

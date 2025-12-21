@@ -480,8 +480,8 @@ float Gas::calculateBoltzmannEntropy(int leftHotCount, int rightHotCount, int le
 void Grid::Load(int gridWidth, int gridHeight, float _cellSize)
 {
     cellSize = _cellSize;
-    int columns = static_cast<int>(std::ceil(static_cast<float>(gridWidth) / cellSize));
-    int rows = static_cast<int>(std::ceil(static_cast<float>(gridHeight) / cellSize));
+    int columns = static_cast<int>(ceil(static_cast<float>(gridWidth) / cellSize));
+    int rows = static_cast<int>(ceil(static_cast<float>(gridHeight) / cellSize));
 
     cellCount = Vector2(columns, rows);
     cells.resize(columns, std::vector<std::vector<Molecule *>>(rows));
@@ -499,8 +499,8 @@ void Grid::Load(int gridWidth, int gridHeight, float _cellSize)
 
 Vector2 Grid::place(float _x, float _y) const
 {
-    int x = std::floor(static_cast<int>((_x - CONTAINER_X) / cellSize));
-    int y = std::floor(static_cast<int>((_y - CONTAINER_Y) / cellSize));
+    int x = floor(static_cast<int>((_x - CONTAINER_X) / cellSize));
+    int y = floor(static_cast<int>((_y - CONTAINER_Y) / cellSize));
 
     if (x < 0)
         x = 0;
@@ -544,8 +544,8 @@ void Grid::addWall(Wall *wall)
 {
     Vector2 cell = place(wall->rect.x, wall->rect.y);
 
-    int widthCells = std::ceil(wall->rect.width / cellSize);
-    int heightCells = std::ceil(wall->rect.height / cellSize);
+    int widthCells = ceil(wall->rect.width / cellSize);
+    int heightCells = ceil(wall->rect.height / cellSize);
 
     for (int x = cell.x; x < cell.x + widthCells; x++)
     {
@@ -561,8 +561,8 @@ void Grid::removeWall(Wall *wall)
 {
     Vector2 cell = place(wall->rect.x, wall->rect.y);
 
-    int widthCells = std::ceil(wall->rect.width / cellSize);
-    int heightCells = std::ceil(wall->rect.height / cellSize);
+    int widthCells = ceil(wall->rect.width / cellSize);
+    int heightCells = ceil(wall->rect.height / cellSize);
 
     for (int x = cell.x; x < cell.x + widthCells; x++)
     {
@@ -754,8 +754,8 @@ bool Grid::checkSensor(Molecule &mol)
     // Vector2 cellsCenter = place(640, 450); // sensor rect center
     Vector2 sensorCell = place(sensor.x, sensor.y);
 
-    int widthCells = std::ceil(sensor.width / cellSize);
-    int heightCells = std::ceil(sensor.height / cellSize);
+    int widthCells = ceil(sensor.width / cellSize);
+    int heightCells = ceil(sensor.height / cellSize);
 
     bool isDetected = false;
     for (int x = sensorCell.x; x < sensorCell.x + widthCells; x++)

@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "config.h"
 
 int main(void){
     Game client;

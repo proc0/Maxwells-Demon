@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <vector>
-#include <algorithm>
+#include <algorithm> // IWYU pragma: keep
 
 #define DENSITY 40
 #define CONTAINER_WIDTH 800

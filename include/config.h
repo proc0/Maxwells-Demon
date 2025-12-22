@@ -3,5 +3,5 @@
 #define PROJECT_NAME "Maxwells-Demon"
 #define VERSION "0.1.0"
 #define DEBUG 1
-#define DATE_BUILD "2025-12-21 17:28:10"
+#define DATE_BUILD "2025-12-22 09:48:45"
 #define DIR_ASSETS "assets"

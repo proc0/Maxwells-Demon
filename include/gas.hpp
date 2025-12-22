@@ -10,16 +10,23 @@
 #define CONTAINER_HEIGHT 400
 #define CONTAINER_X 240
 #define CONTAINER_Y 200
+#define CONTAINER_BORDER 15
+#define CONTAINER_BORDER_WIDTH CONTAINER_WIDTH + CONTAINER_BORDER*2
+#define CONTAINER_BORDER_HEIGHT CONTAINER_HEIGHT + CONTAINER_BORDER*2
+#define CONTAINER_BORDER_X CONTAINER_X - CONTAINER_BORDER
+#define CONTAINER_BORDER_Y CONTAINER_Y - CONTAINER_BORDER
 #define DOOR_MIN_Y 250.0f
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
+
+
 #define MAX_SPEED 500.0f
 #define RESTITUTION 0.8f
 #define MOLECULE_RADIUS 12.0f
 #define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
 #define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
-#define GRAVITY Vector2(0, 982.0f)
-#define ZERO_FORCE Vector2(0, 0)
+#define GRAVITY Vector2(0.0f, 982.0f)
+#define ZERO_VECTOR Vector2(0.0f, 0.0f)
 
 #define EASE_OUT_EXPO(x) (x >= 1 ? 1 : 1 - pow(2, -10 * x))
 
@@ -99,15 +106,21 @@ class Gas
     Color colorChamberLeft;
     Color colorChamberRight;
     Color barColor;
-    int rightChamberHotCount = 0;
-    int rightChamberCoolCount = 0;
-    int leftChamberHotCount = 0;
-    int leftChamberCoolCount = 0;
-    int totalHotCount = 0;
-    int totalCoolCount = 0;
+
+    const char *pipeText = ":";
+    float rightChamberHotCount = 0;
+    float rightChamberCoolCount = 0;
+    float leftChamberHotCount = 0;
+    float leftChamberCoolCount = 0;
+    float totalHotCount = 0;
+    float totalCoolCount = 0;
     float completion = 0.0f;
     float entropy = 0.0f;
     float maxEntropy = 0.0f;
+    int entropyBarLength = CONTAINER_BORDER_WIDTH - 100;
+    int entropyBar = 0;
+    int entropyBarX = CONTAINER_BORDER_X + 50;
+    int entropyBarY = 40;
 
 public:
     void Load();
@@ -123,6 +136,6 @@ public:
     void CollideZone(Molecule &mol);
     void Collide(Molecule &m1, Molecule *m2);
     void Repulse(Molecule &m1, Molecule *m2);
-    float calculateShannonEntropy() const;
-    float calculateBoltzmannEntropy(int leftHotCount, int rightHotCount, int leftColdCount, int rightColdCount) const;
+    float calculateShannonEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const;
+    float calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const;
 };

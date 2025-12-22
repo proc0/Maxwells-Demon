@@ -3,8 +3,8 @@
 
 void Gas::Load()
 {
-    containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2, CONTAINER_HEIGHT });
-    containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2, CONTAINER_Y, CONTAINER_WIDTH/2, CONTAINER_HEIGHT });
+    containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
+    containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
     colorChamberLeft = BLUE;
     colorChamberRight = RED;
     barColor = RED;
@@ -52,7 +52,7 @@ void Gas::Populate()
 {
     grid.addWalls(wallRects);
 
-    int maxMoleculeType = float(DENSITY) / 2;
+    int maxMoleculeType = DENSITY/2;
     for (int i = 0; i < DENSITY; i++)
     {
         if (molecules[i].active)
@@ -78,14 +78,13 @@ void Gas::Populate()
         float randPosY = float(GetRandomValue(150, 250));
         Vector2 randForce = Vector2(GetRandomValue(0, 1) == 1 ? randNegX : randPosX, GetRandomValue(0, 1) == 1 ? randNegY : randPosY);
         molecules[i] = {
-            // .force = {0, 0},
-            .force = isHot ? randForce : ZERO_FORCE,
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
-            .origin = {0.0f, 0.0f},
+            .force = isHot ? randForce : ZERO_VECTOR,
+            .origin = ZERO_VECTOR,
             .position = Spawn(MOLECULE_RADIUS),
-            .velocity = {0, 0},
             // .velocity = vel,
-            .acceleration = {0.0f, 0.0f},
+            .velocity = ZERO_VECTOR,
+            .acceleration = ZERO_VECTOR,
             .color1 = color1,
             .color2 = color2,
             .color = ColorLerp(color1, color2, fabsf(vel.x) + fabsf(vel.y)),
@@ -95,7 +94,8 @@ void Gas::Populate()
             .id = i,
             .active = true,
             .collided = false,
-            .isHot = isHot};
+            .isHot = isHot
+        };
 
         grid.add(&molecules[i]);
 
@@ -127,8 +127,8 @@ void Gas::Populate()
         }
     }
 
-    float halfHotCount = float(totalHotCount) / 2;
-    float halfColdCount = float(totalCoolCount) / 2;
+    float halfHotCount = totalHotCount/2.0f;
+    float halfColdCount = totalCoolCount/2.0f;
     maxEntropy = calculateBoltzmannEntropy(halfHotCount, totalHotCount - halfHotCount, halfColdCount, totalCoolCount - halfColdCount);
     entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
     completion = entropy / maxEntropy;
@@ -160,16 +160,12 @@ Vector2 Gas::Spawn(float radius)
 void Gas::Render() const
 {
 
-    DrawRectangle(CONTAINER_X - 15, CONTAINER_Y - 15, CONTAINER_WIDTH + 30, CONTAINER_HEIGHT + 30, BLACK);
+    DrawRectangle(CONTAINER_BORDER_X, CONTAINER_BORDER_Y, CONTAINER_BORDER_WIDTH, CONTAINER_BORDER_HEIGHT, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
 
     DrawRectangleRec(containerLeft, colorChamberLeft);
     DrawRectangleRec(containerRight, colorChamberRight);
 
-    // DrawCircleGradient(CONTAINER_X+CONTAINER_WIDTH/4, CONTAINER_Y+CONTAINER_HEIGHT/2, CONTAINER_WIDTH*0.25-20, RAYWHITE, colorChamberLeft);
-    // DrawCircleGradient(CONTAINER_X+CONTAINER_WIDTH*0.75, CONTAINER_Y+CONTAINER_HEIGHT/2, CONTAINER_WIDTH*0.25-20, RAYWHITE, colorChamberRight);
-    
-    // DrawRectangleRec(wallRect, BLACK);
     grid.Render();
 
     for (const Molecule &mol : molecules)
@@ -180,16 +176,28 @@ void Gas::Render() const
         DrawCircle(mol.position.x, mol.position.y, mol.radius, mol.color);
     }
 
-    const char *leftCount = TextFormat("Left: %d/%d", leftChamberCoolCount, leftChamberHotCount);
-    const char *rightCount = TextFormat("Right: %d/%d", rightChamberCoolCount, rightChamberHotCount);
-    const char *entText = TextFormat("Entropy: %f", entropy);
-    const char *maxEntText = TextFormat("Max Entropy: %f", maxEntropy);
-    DrawText(leftCount, 50, 10, 20, BLACK);
-    DrawText(rightCount, 850, 10, 20, BLACK);
-    DrawText(entText, 630, 10, 20, BLACK);
-    DrawText(maxEntText, 330, 10, 20, BLACK);
+    const char *leftHotCountText = TextFormat("%.f", leftChamberHotCount);
+    const char *leftColdCountText = TextFormat("%.f", leftChamberCoolCount);
+    const char *rightHotCountText = TextFormat("%.f", rightChamberHotCount);
+    const char *rightColdCountText = TextFormat("%.f", rightChamberCoolCount);
 
-    DrawRectangle(330, 45, 500 * completion, 8, barColor);
+    DrawText(leftHotCountText, 280, 15, 20, RED);
+    DrawText(pipeText, 300, 15, 20, BLACK); 
+    DrawText(leftColdCountText, 308, 15, 20, BLUE);
+
+    DrawText(rightHotCountText, 948, 15, 20, RED);
+    DrawText(pipeText, 970, 15, 20, BLACK);
+    DrawText(rightColdCountText, 980, 15, 20, BLUE);
+
+    const char *entText = TextFormat("Entropy %.2f", entropy);
+    const char *maxEntText = TextFormat("Max %.2f", maxEntropy);
+    DrawText(entText, 430, 15, 20, BLACK);
+    DrawText(maxEntText, 730, 15, 20, BLACK);
+
+    DrawRectangle(entropyBarX-1, entropyBarY-1, entropyBarLength+2, 7, BLACK);
+    DrawRectangle(entropyBarX, entropyBarY, entropyBarLength, 5, RAYWHITE);
+    DrawRectangle(entropyBarX, entropyBarY, entropyBar, 5, barColor);
+
 }
 
 void Gas::Update()
@@ -202,15 +210,15 @@ void Gas::Update()
     for (Molecule &mol : molecules)
     {
         CheckBounds(mol);
-        UpdateMovement(mol, ZERO_FORCE);
+        UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
         grid.update(&mol);
     }
 
-    int _rightChamberHotCount = 0;
-    int _rightChamberCoolCount = 0;
-    int _leftChamberHotCount = 0;
-    int _leftChamberCoolCount = 0;
+    float _rightChamberHotCount = 0.0f;
+    float _rightChamberCoolCount = 0.0f;
+    float _leftChamberHotCount = 0.0f;
+    float _leftChamberCoolCount = 0.0f;
     for (Molecule &mol : molecules)
     {
         if (mol.isHot && mol.isLeft)
@@ -239,18 +247,19 @@ void Gas::Update()
 
     entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
     completion = entropy / maxEntropy;
-    barColor = completion < 0.5 ? GREEN : RED;
+    entropyBar = entropyBarLength * completion;
+    barColor = ColorLerp(GREEN, GRAY, completion);
 
     if(leftChamberCoolCount == leftChamberHotCount) {
         colorChamberLeft = RAYWHITE;
     } else {
-        colorChamberLeft = Fade(leftChamberCoolCount > leftChamberHotCount ? ColorLerp(RAYWHITE, BLUE, float(leftChamberCoolCount)/totalCoolCount) : ColorLerp(RAYWHITE, RED, float(leftChamberHotCount)/totalHotCount), 0.2);
+        colorChamberLeft = Fade(leftChamberCoolCount > leftChamberHotCount ? ColorLerp(RAYWHITE, BLUE, leftChamberCoolCount/totalCoolCount) : ColorLerp(RAYWHITE, RED, leftChamberHotCount/totalHotCount), 0.2f);
     }
 
     if(rightChamberCoolCount == rightChamberHotCount) {
         colorChamberRight = RAYWHITE;
     } else {
-        colorChamberRight = Fade(rightChamberCoolCount > rightChamberHotCount ? ColorLerp(RAYWHITE, BLUE, float(rightChamberCoolCount)/totalCoolCount) : ColorLerp(RAYWHITE, RED, float(rightChamberHotCount)/totalHotCount), 0.2);
+        colorChamberRight = Fade(rightChamberCoolCount > rightChamberHotCount ? ColorLerp(RAYWHITE, BLUE, rightChamberCoolCount/totalCoolCount) : ColorLerp(RAYWHITE, RED, rightChamberHotCount/totalHotCount), 0.2f);
     }
 
 }
@@ -392,8 +401,8 @@ void Gas::Collide(Molecule &m1, Molecule *m2)
     float tangentComponent2 = Vector2DotProduct(m2->velocity, unitTangent);
 
     float totalMass = m1.mass + m2->mass;
-    float normalVelocity1 = (m1.restitution * normalComponent1 * (m1.mass - m2->mass) + 2 * m2->mass * normalComponent2) / totalMass;
-    float normalVelocity2 = (m2->restitution * normalComponent2 * (m2->mass - m1.mass) + 2 * m1.mass * normalComponent1) / totalMass;
+    float normalVelocity1 = (m1.restitution * normalComponent1 * (m1.mass - m2->mass) + 2.0f * m2->mass * normalComponent2) / totalMass;
+    float normalVelocity2 = (m2->restitution * normalComponent2 * (m2->mass - m1.mass) + 2.0f * m1.mass * normalComponent1) / totalMass;
 
     Vector2 normalVectorVelocity1 = unitNormal * normalVelocity1;
     Vector2 normalVectorVelocity2 = unitNormal * normalVelocity2;
@@ -466,25 +475,27 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force)
     }
 
     Vector2 normalVel = Vector2Normalize(newVelocity);
-    mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y) / 10));
+    mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y) / 10.0f));
     // mol.color = ColorLerp(mol.color1, mol.color2, Vector2Length(normalVel)/2);
 }
 
-float Gas::calculateShannonEntropy() const
+float Gas::calculateShannonEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const
 {
     // Stirling Approx. : n*(N!) ≈ N*lnN − N
     // This has negative results (error approx.) for small numbers
-    float p = float(leftChamberHotCount) / float(totalHotCount);
-    float q = float(rightChamberHotCount) / float(totalHotCount);
-    float r = float(leftChamberCoolCount) / float(totalCoolCount);
-    float t = float(rightChamberCoolCount) / float(totalCoolCount);
+    float totalCountHot = leftHotCount + rightHotCount;
+    float totalCountCold = leftColdCount + rightColdCount;
+    float p = leftHotCount / totalCountHot;
+    float q = rightHotCount / totalCountHot;
+    float r = leftColdCount / totalCountCold;
+    float t = rightColdCount / totalCountCold;
 
-    float leftHotMember = p != 1 && p != 0 ? float(totalHotCount) * (p * log(p) + (1 - p) * log(1 - p)) : 0;
-    float leftCoolMember = r != 1 && r != 0 ? float(totalCoolCount) * (r * log(r) + (1 - r) * log(1 - r)) : 0;
+    float leftHotMember = p != 1 && p != 0 ? totalCountHot * (p * log(p) + (1 - p) * log(1 - p)) : 0;
+    float leftCoolMember = r != 1 && r != 0 ? totalCountCold * (r * log(r) + (1 - r) * log(1 - r)) : 0;
     float leftEntropy = leftHotMember == 0 ? leftCoolMember : -leftHotMember - leftCoolMember;
 
-    float rightHotMember = q != 1 && q != 0 ? float(totalHotCount) * (q * log(q) + (1 - q) * log(1 - q)) : 0;
-    float rightCoolMember = t != 1 && t != 0 ? float(totalCoolCount) * (t * log(t) + (1 - t) * log(1 - t)) : 0;
+    float rightHotMember = q != 1 && q != 0 ? totalCountHot * (q * log(q) + (1 - q) * log(1 - q)) : 0;
+    float rightCoolMember = t != 1 && t != 0 ? totalCountCold * (t * log(t) + (1 - t) * log(1 - t)) : 0;
     float rightEntropy = rightHotMember == 0 ? rightCoolMember : -rightHotMember - rightCoolMember;
 
     return leftEntropy + rightEntropy;
@@ -498,12 +509,14 @@ float factorial(const int n)
     return f;
 }
 
-float Gas::calculateBoltzmannEntropy(int leftHotCount, int rightHotCount, int leftColdCount, int rightColdCount) const
-{
+float Gas::calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const
+{   // S = k*ln*W
+    // W = N1! / N2!*N3!
+    // where N1 is total count of molecules, N2, N3 are chamber counts
     float totalCountHot = leftHotCount + rightHotCount;
     float totalCountCold = leftColdCount + rightColdCount;
-    float hotEntropy = factorial(float(totalCountHot)) / (factorial(float(leftHotCount)) * factorial(float(rightHotCount)));
-    float coldEntropy = factorial(float(totalCountCold)) / (factorial(float(leftColdCount)) * factorial(float(rightColdCount)));
+    float hotEntropy = factorial(totalCountHot) / (factorial(leftHotCount) * factorial(rightHotCount));
+    float coldEntropy = factorial(totalCountCold) / (factorial(leftColdCount) * factorial(rightColdCount));
 
     return log(hotEntropy * coldEntropy);
 }

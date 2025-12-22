@@ -19,6 +19,9 @@ class Game {
         int screenWidth = SCREEN_WIDTH;
         int screenHeight = SCREEN_HEIGHT;
 
+        Game(){};
+        ~Game() = default;
+        
         void Load();
         static void Loop(void *self);
         void Render() const;

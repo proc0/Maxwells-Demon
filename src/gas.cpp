@@ -211,11 +211,6 @@ void Gas::Render() const
 
 void Gas::Update()
 {
-    // if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
-    //     for (Molecule& mol : molecules) {
-    //         mol.position = { x: float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH-3)), y: float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT-3)) };
-    //     }
-    // }
     for (Molecule &mol : molecules)
     {
         CheckBounds(mol);
@@ -396,8 +391,6 @@ void Gas::CollideZone(Molecule &mol)
     }
 }
 
-// TODO: add inelastic collision by factoring in RESTITUION
-// update the color of the ball from red to blue as it loses energy
 void Gas::Collide(Molecule &m1, Molecule *m2)
 {
     Vector2 normal = m1.position - m2->position;
@@ -463,6 +456,7 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force)
     Vector2 halfStepVelocity = Vector2Add(mol.velocity, mol.acceleration * (deltaTime / 2));
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration * (deltaTime / 2));
 
+    // speed limit
     if (mol.velocity.x > MAX_SPEED)
     {
         mol.velocity.x = MAX_SPEED;
@@ -483,9 +477,9 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force)
         mol.velocity.y = -MAX_SPEED;
     }
 
+    // color update
     Vector2 normalVel = Vector2Normalize(newVelocity);
     mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y) / 10.0f));
-    // mol.color = ColorLerp(mol.color1, mol.color2, Vector2Length(normalVel)/2);
 }
 
 float Gas::calculateShannonEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const
@@ -803,8 +797,6 @@ bool Grid::checkTunneling(Vector2 position, float radius)
 
 bool Grid::checkSensor(Molecule &mol)
 {
-    // Vector2 molCell = place(mol.position.x, mol.position.y);
-    // Vector2 cellsCenter = place(640, 450); // sensor rect center
     Vector2 sensorCell = place(sensor.x, sensor.y);
 
     int widthCells = ceil(sensor.width / cellSize);

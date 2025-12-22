@@ -78,6 +78,10 @@ class Grid
     bool isDoorClosing = false;
 
 public:
+
+    Grid(){};
+    ~Grid() = default;
+
     void Load(int gridWidth, int gridHeight, float _cellSize);
     Vector2 place(float x, float y) const;
     void add(Molecule *mol);

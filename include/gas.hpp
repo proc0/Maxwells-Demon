@@ -123,6 +123,12 @@ class Gas
     int entropyBarY = 40;
 
 public:
+    int screenWidth = 1280;
+    int screenHeight = 720;
+
+    Gas(){};
+    ~Gas() = default;
+
     void Load();
     void Render() const;
     void Populate();

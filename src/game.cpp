@@ -30,7 +30,7 @@ void Game::Resize()
 void Game::Update()
 {
 
-    Resize();
+    // Resize();
     gas.Update();
 }
 
@@ -48,6 +48,8 @@ void Game::Render() const
 void Game::Load()
 {
     gas.Load();
+    gas.screenWidth = screenWidth;
+    gas.screenHeight = screenHeight;
 }
 
 void Game::Unload()

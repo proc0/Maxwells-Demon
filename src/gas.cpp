@@ -60,7 +60,10 @@ void Gas::Populate()
             continue;
         }
 
-        Vector2 vel = {float(GetRandomValue(-100, 100)), float(GetRandomValue(-100, 100))};
+        Vector2 vel = {
+            float(GetRandomValue(-100, 100)), 
+            float(GetRandomValue(-100, 100))
+        };
 
         bool isHot = GetRandomValue(0, 1) == 1;
         if(isHot && totalHotCount > maxMoleculeType) {
@@ -102,7 +105,7 @@ void Gas::Populate()
         if (molecules[i].isHot)
         {
             totalHotCount++;
-            if (molecules[i].position.x > float(GetScreenWidth()) / 2)
+            if (molecules[i].position.x > static_cast<float>(screenWidth)/2.0f)
             {
                 rightChamberHotCount++;
             }
@@ -115,7 +118,7 @@ void Gas::Populate()
         else
         {
             totalCoolCount++;
-            if (molecules[i].position.x > float(GetScreenWidth()) / 2)
+            if (molecules[i].position.x > static_cast<float>(screenWidth)/2.0f)
             {
                 rightChamberCoolCount++;
             }
@@ -136,16 +139,22 @@ void Gas::Populate()
 
 Vector2 Gas::Spawn(float radius)
 {
-    Vector2 position = {float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT))};
+    Vector2 position = {
+        float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), 
+        float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT))
+    };
+    
     int retries = 12;
-
     while (retries >= 0)
     {
-        bool isIntersect = grid.checkTunneling(position, radius);
-        if (!isIntersect)
+        if (!grid.checkTunneling(position, radius))
             break;
 
-        position = {float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT))};
+        position = {
+            float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), 
+            float(GetRandomValue(CONTAINER_Y, CONTAINER_Y + CONTAINER_HEIGHT))
+        };
+        
         retries--;
     }
 
@@ -338,7 +347,7 @@ void Gas::CheckBounds(Molecule &mol)
     if (grid.checkSensor(mol))
     {
         mol.isCounted = true;
-        if (mol.position.x > float(GetScreenWidth()) / 2)
+        if (mol.position.x > static_cast<float>(screenWidth)/2.0f)
         {
             mol.isLeft = false;
         }

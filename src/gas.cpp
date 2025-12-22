@@ -1,7 +1,13 @@
 #include "gas.hpp"
+#include "raylib.h"
 
 void Gas::Load()
 {
+    containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2, CONTAINER_HEIGHT });
+    containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2, CONTAINER_Y, CONTAINER_WIDTH/2, CONTAINER_HEIGHT });
+    colorChamberLeft = BLUE;
+    colorChamberRight = RED;
+    barColor = RED;
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
     Populate();
 }
@@ -46,7 +52,7 @@ void Gas::Populate()
 {
     grid.addWalls(wallRects);
 
-    int maxHotMoleculates = float(DENSITY) / 2;
+    int maxMoleculeType = float(DENSITY) / 2;
     for (int i = 0; i < DENSITY; i++)
     {
         if (molecules[i].active)
@@ -55,7 +61,13 @@ void Gas::Populate()
         }
 
         Vector2 vel = {float(GetRandomValue(-100, 100)), float(GetRandomValue(-100, 100))};
-        bool isHot = totalHotCount < maxHotMoleculates ? GetRandomValue(0, 1) == 1 : false;
+
+        bool isHot = GetRandomValue(0, 1) == 1;
+        if(isHot && totalHotCount > maxMoleculeType) {
+            isHot = false;
+        } else if (!isHot && totalCoolCount > maxMoleculeType) {
+            isHot = true;
+        }
 
         Color color1 = isHot ? BEIGE : DARKBLUE;
         Color color2 = isHot ? RED : BLUE;
@@ -151,6 +163,12 @@ void Gas::Render() const
     DrawRectangle(CONTAINER_X - 15, CONTAINER_Y - 15, CONTAINER_WIDTH + 30, CONTAINER_HEIGHT + 30, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
 
+    DrawRectangleRec(containerLeft, colorChamberLeft);
+    DrawRectangleRec(containerRight, colorChamberRight);
+
+    // DrawCircleGradient(CONTAINER_X+CONTAINER_WIDTH/4, CONTAINER_Y+CONTAINER_HEIGHT/2, CONTAINER_WIDTH*0.25-20, RAYWHITE, colorChamberLeft);
+    // DrawCircleGradient(CONTAINER_X+CONTAINER_WIDTH*0.75, CONTAINER_Y+CONTAINER_HEIGHT/2, CONTAINER_WIDTH*0.25-20, RAYWHITE, colorChamberRight);
+    
     // DrawRectangleRec(wallRect, BLACK);
     grid.Render();
 
@@ -171,8 +189,7 @@ void Gas::Render() const
     DrawText(entText, 630, 10, 20, BLACK);
     DrawText(maxEntText, 330, 10, 20, BLACK);
 
-    Color barColor = completion < 0.5 ? GREEN : RED;
-    DrawRectangle(330, 45, 500 * completion, 15, barColor);
+    DrawRectangle(330, 45, 500 * completion, 8, barColor);
 }
 
 void Gas::Update()
@@ -222,6 +239,20 @@ void Gas::Update()
 
     entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
     completion = entropy / maxEntropy;
+    barColor = completion < 0.5 ? GREEN : RED;
+
+    if(leftChamberCoolCount == leftChamberHotCount) {
+        colorChamberLeft = RAYWHITE;
+    } else {
+        colorChamberLeft = Fade(leftChamberCoolCount > leftChamberHotCount ? ColorLerp(RAYWHITE, BLUE, float(leftChamberCoolCount)/totalCoolCount) : ColorLerp(RAYWHITE, RED, float(leftChamberHotCount)/totalHotCount), 0.2);
+    }
+
+    if(rightChamberCoolCount == rightChamberHotCount) {
+        colorChamberRight = RAYWHITE;
+    } else {
+        colorChamberRight = Fade(rightChamberCoolCount > rightChamberHotCount ? ColorLerp(RAYWHITE, BLUE, float(rightChamberCoolCount)/totalCoolCount) : ColorLerp(RAYWHITE, RED, float(rightChamberHotCount)/totalHotCount), 0.2);
+    }
+
 }
 
 void Gas::Unload()

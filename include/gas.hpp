@@ -93,7 +93,12 @@ class Gas
 {
     Grid grid;
     Molecule molecules[DENSITY];
+    Rectangle containerLeft;
+    Rectangle containerRight;
     std::vector<Rectangle> wallRects = {Rectangle({633, 200, 15, 150}), Rectangle({633, 350, 15, 100}), Rectangle({633, 450, 15, 150})};
+    Color colorChamberLeft;
+    Color colorChamberRight;
+    Color barColor;
     int rightChamberHotCount = 0;
     int rightChamberCoolCount = 0;
     int leftChamberHotCount = 0;

@@ -282,13 +282,13 @@ void Gas::CheckBounds(Molecule &mol)
         Rectangle wallRect = wall->rect;
         if (CheckCollisionCircleRec(mol.position, mol.radius, wallRect))
         {
-            if (mol.getRight() > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0)
+            if (Locate::Right(mol) > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0)
             {
                 mol.position.x = wallRect.x - mol.radius - 2;
                 mol.velocity.x *= -mol.restitution;
                 mol.force.x *= -mol.restitution;
             }
-            else if (mol.getLeft() < wallRect.x + wallRect.width && mol.position.x > wallRect.x && mol.velocity.x < 0)
+            else if (Locate::Left(mol) < wallRect.x + wallRect.width && mol.position.x > wallRect.x && mol.velocity.x < 0)
             {
                 mol.position.x = wallRect.x + wallRect.width + mol.radius + 2;
                 mol.velocity.x *= -mol.restitution;
@@ -720,8 +720,8 @@ void Grid::updateWalls()
 
 std::vector<Molecule *> Grid::getZone(Molecule *mol)
 {
-    Vector2 topLeft = place(mol->getLeft(), mol->getTop());
-    Vector2 bottomRight = place(mol->getRight(), mol->getBottom());
+    Vector2 topLeft = place(Locate::Left(*mol), Locate::Top(*mol));
+    Vector2 bottomRight = place(Locate::Right(*mol), Locate::Bottom(*mol));
 
     int queryId = ++queryIds;
     std::vector<Molecule *> zone;
@@ -747,8 +747,8 @@ std::vector<Molecule *> Grid::getZone(Molecule *mol)
 
 std::vector<Wall *> Grid::getWalls(Molecule *mol)
 {
-    Vector2 topLeft = place(mol->getLeft(), mol->getTop());
-    Vector2 bottomRight = place(mol->getRight(), mol->getBottom());
+    Vector2 topLeft = place(Locate::Left(*mol), Locate::Top(*mol));
+    Vector2 bottomRight = place(Locate::Right(*mol), Locate::Bottom(*mol));
 
     std::vector<Wall *> wallZone;
     std::vector<int> processed;
@@ -824,3 +824,8 @@ void Grid::clear()
         }
     }
 }
+
+float Locate::Left(const Molecule& m) { return m.position.x - m.radius; }
+float Locate::Right(const Molecule& m) { return m.position.x + m.radius; }
+float Locate::Top(const Molecule& m) { return m.position.y - m.radius; }
+float Locate::Bottom(const Molecule& m) { return m.position.y + m.radius; }

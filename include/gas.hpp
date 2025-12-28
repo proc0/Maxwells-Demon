@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <vector>
+#include <array>
 #include <algorithm> // IWYU pragma: keep
 
 #define DENSITY 40
@@ -28,7 +29,7 @@
 #define GRAVITY Vector2(0.0f, 982.0f)
 #define ZERO_VECTOR Vector2(0.0f, 0.0f)
 
-#define EASE_OUT_EXPO(x) (x >= 1 ? 1 : 1 - pow(2, -10 * x))
+#define EASE_OUT_EXPO(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
 
 typedef struct Molecule
 {
@@ -51,12 +52,14 @@ typedef struct Molecule
     bool isHot = false;
     bool isLeft = false;
     bool isCounted = false;
-
-    float getLeft() const { return position.x - radius; }
-    float getRight() const { return position.x + radius; }
-    float getTop() const { return position.y - radius; }
-    float getBottom() const { return position.y + radius; }
 } Molecule;
+
+namespace Locate {
+    float Left(const Molecule&);
+    float Right(const Molecule&);
+    float Top(const Molecule&);
+    float Bottom(const Molecule&);
+};
 
 typedef struct Wall
 {
@@ -103,7 +106,7 @@ public:
 class Gas
 {
     Grid grid;
-    Molecule molecules[DENSITY];
+    std::array<Molecule, DENSITY> molecules;
     Rectangle containerLeft;
     Rectangle containerRight;
     std::vector<Rectangle> wallRects = {Rectangle({633, 200, 15, 150}), Rectangle({633, 350, 15, 100}), Rectangle({633, 450, 15, 150})};

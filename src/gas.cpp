@@ -29,7 +29,7 @@ void Gas::Test()
         .collided = false,
     };
 
-    grid.add(&molecules[0]);
+    grid.addPoint(molecules[0].position, 0);
 
     molecules[1] = {
         .force = {-10, 5},
@@ -45,7 +45,7 @@ void Gas::Test()
         .collided = false,
     };
 
-    grid.add(&molecules[1]);
+    grid.addPoint(molecules[1].position, 1);
 }
 
 void Gas::Populate()
@@ -100,7 +100,7 @@ void Gas::Populate()
             .isHot = isHot
         };
 
-        grid.add(&molecules[i]);
+        grid.addPoint(molecules[i].position, i);
 
         if (molecules[i].isHot)
         {
@@ -216,7 +216,7 @@ void Gas::Update()
         CheckBounds(mol);
         UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
-        grid.update(&mol);
+        mol.cell = grid.update(mol.position, mol.cell, mol.id);
     }
 
     float _rightChamberHotCount = 0.0f;
@@ -528,19 +528,19 @@ float Gas::calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, fl
     return log(hotEntropy * coldEntropy);
 }
 
-void Grid::Load(int gridWidth, int gridHeight, float _cellSize)
+void Grid::Load(short width, short height, float unit)
 {
-    cellSize = _cellSize;
-    int columns = static_cast<int>(ceil(static_cast<float>(gridWidth) / cellSize));
-    int rows = static_cast<int>(ceil(static_cast<float>(gridHeight) / cellSize));
+    cellSize = unit;
+    short columns = static_cast<short>(ceil(static_cast<float>(width) / cellSize));
+    short rows = static_cast<short>(ceil(static_cast<float>(height) / cellSize));
 
     cellCount = Vector2(columns, rows);
     cells.resize(columns, std::vector<Cell>(rows));
     wallCells.resize(columns, std::vector<std::vector<Wall *>>(rows));
 
-    for (int x = 0; x < columns; ++x)
+    for (short x = 0; x < columns; ++x)
     {
-        for (int y = 0; y < rows; ++y)
+        for (short y = 0; y < rows; ++y)
         {
             cells[x][y] = Cell();
             wallCells[x][y] = std::vector<Wall *>();
@@ -565,12 +565,49 @@ Vector2 Grid::place(float _x, float _y) const
     return Vector2(x, y);
 }
 
-void Grid::add(Molecule *mol)
+void Grid::addPoint(Vector2 point, short id)
 {
-    Vector2 cell = place(mol->position.x, mol->position.y);
-    cells[cell.x][cell.y].push_back(mol->id);
-    mol->cell = cell;
+    Vector2 cell = place(point.x, point.y);
+    cells[cell.x][cell.y].push_back(id);
+    // mol->cell = cell;
 }
+
+void Grid::addArea(Rectangle area, short id)
+{
+    Vector2 cell = place(area.x, area.y);
+
+    int widthCells = ceil(area.width / cellSize);
+    int heightCells = ceil(area.height / cellSize);
+
+    for (int x = cell.x; x < cell.x + widthCells; x++)
+    {
+        for (int y = cell.y; y < cell.y + heightCells; y++)
+        {
+            cells[x][y].push_back(id);
+            // wall->cells.push_back(Vector2(x, y));
+        }
+    }
+}
+
+void Grid::removeArea(Rectangle area, short id)
+{
+    Vector2 position = place(area.x, area.y);
+
+    int widthCells = ceil(area.width / cellSize);
+    int heightCells = ceil(area.height / cellSize);
+
+    for (int x = position.x; x < position.x + widthCells; x++)
+    {
+        for (int y = position.y; y < position.y + heightCells; y++)
+        {
+            auto &cell = cells[x][y];
+
+            auto newEnd = std::remove(cell.begin(), cell.end(), id);
+            cell.erase(newEnd, cell.end());
+        }
+    }
+}
+
 
 void Grid::addWalls(std::vector<Rectangle> &wallRects)
 {
@@ -627,12 +664,11 @@ void Grid::removeWall(Wall *wall)
     }
 }
 
-void Grid::remove(Molecule *mol)
+void Grid::remove(Vector2 cell, short id)
 {
-    const Vector2 &cell = mol->cell;
     auto gridCell = cells[cell.x][cell.y];
 
-    auto newEnd = std::remove(gridCell.begin(), gridCell.end(), mol->id);
+    auto newEnd = std::remove(gridCell.begin(), gridCell.end(), id);
     gridCell.erase(newEnd, gridCell.end());
 }
 
@@ -651,21 +687,17 @@ void Grid::Render() const
     }
 }
 
-void Grid::update(Molecule *mol)
+Vector2 Grid::update(Vector2 point, Vector2 cell, short id)
 {
-    Vector2 newCell = place(mol->position.x, mol->position.y);
-    if (newCell.x != mol->cell.x || newCell.y != mol->cell.y)
+    Vector2 newCell = place(point.x, point.y);
+    if (newCell.x != cell.x || newCell.y != cell.y)
     {
-        remove(mol);
-        mol->cell = newCell;
-        cells[newCell.x][newCell.y].push_back(mol->id);
+        remove(cell, id);
+        cells[newCell.x][newCell.y].push_back(id);
+        return newCell;
     }
-}
 
-void Grid::updateWall(Wall *wall)
-{
-    removeWall(wall);
-    addWall(wall);
+    return Vector2(0, 0);
 }
 
 void Grid::updateWalls()
@@ -722,10 +754,10 @@ void Grid::updateWalls()
     }
 }
 
-Cell Grid::getZone(Vector2 position, float radius, short id)
+Cell Grid::getZone(Vector2 point, float radius, short id)
 {
-    Vector2 topLeft = place(Locate::Left(position, radius), Locate::Top(position, radius));
-    Vector2 bottomRight = place(Locate::Right(position, radius), Locate::Bottom(position, radius));
+    Vector2 topLeft = place(Locate::Left(point, radius), Locate::Top(point, radius));
+    Vector2 bottomRight = place(Locate::Right(point, radius), Locate::Bottom(point, radius));
 
     Cell zone;
 
@@ -814,17 +846,6 @@ bool Grid::checkSensor(Molecule &mol)
     }
 
     return isDetected;
-}
-
-void Grid::clear()
-{
-    for (auto &col : cells)
-    {
-        for (auto &cell : col)
-        {
-            cell.clear();
-        }
-    }
 }
 
 float Locate::Top(const Molecule& m) { return m.position.y - m.radius; }

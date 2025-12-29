@@ -90,22 +90,25 @@ public:
     Grid(){};
     ~Grid() = default;
 
-    void Load(int gridWidth, int gridHeight, float _cellSize);
+    void Load(short width, short height, float unit);
     Vector2 place(float x, float y) const;
-    // TODO: make all functions pure?
-    void add(Molecule *mol);
-    void addWalls(std::vector<Rectangle> &wallRects);
-    void addWall(Wall *wall);
-    void removeWall(Wall *wall);
+    void addPoint(Vector2 point, short id);
+    void remove(Vector2 cell, short id);
+    Vector2 update(Vector2 point, Vector2 cell, short id);
+    Cell getZone(Vector2 point, float radius, short id);
+
+    void addArea(Rectangle rect, short id);
+    void removeArea(Rectangle area, short id);
+    
+    // TODO: move to chamber class
     bool checkSensor(Molecule &mol);
     bool checkTunneling(Vector2 position, float radius);
-    void remove(Molecule *mol);
-    void update(Molecule *mol);
-    void updateWall(Wall *wall);
+    void addWalls(std::vector<Rectangle> &wallRects);
     void updateWalls();
     void Render() const;
-    void clear();
-    Cell getZone(Vector2 position, float radius, short id);
+    // TODO: consolidate walls with one Grid class? 
+    void addWall(Wall *wall);
+    void removeWall(Wall *wall);
     std::vector<Wall *> getWalls(Molecule *mol);
 };
 

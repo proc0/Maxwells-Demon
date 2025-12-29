@@ -53,7 +53,7 @@ void Gas::Populate()
     grid.addWalls(wallRects);
 
     int maxMoleculeType = DENSITY/2;
-    for (int i = 0; i < DENSITY; i++)
+    for (short i = 0; i < DENSITY; i++)
     {
         if (molecules[i].active)
         {
@@ -355,14 +355,16 @@ void Gas::CheckBounds(Molecule &mol)
 
 void Gas::CheckCollision(Molecule &mol)
 {
-    std::vector<Molecule *> zone = grid.getZone(&mol);
+    Cell zone = grid.getZone(mol.position, mol.radius, mol.id);
 
-    for (Molecule *other : zone)
+    for (auto cid : zone)
     {
-        if (other->id == mol.id)
+        if (cid == mol.id)
         {
             continue;
         }
+
+        Molecule* other = &molecules[cid];
 
         if (CheckCollisionCircles(other->position, other->radius, mol.position, mol.radius))
         {
@@ -378,11 +380,13 @@ void Gas::CollideZone(Molecule &mol)
     if (!mol.collided)
         return;
 
-    std::vector<Molecule *> zone = grid.getZone(&mol);
+    Cell zone = grid.getZone(mol.position, mol.radius, mol.id);
 
-    for (Molecule *other : zone)
+    for (auto cid : zone)
     {
-        if (other->id == mol.id || !other->collided)
+        Molecule* other = &molecules[cid];
+
+        if (cid == mol.id || !other->collided)
         {
             continue;
         }
@@ -531,14 +535,14 @@ void Grid::Load(int gridWidth, int gridHeight, float _cellSize)
     int rows = static_cast<int>(ceil(static_cast<float>(gridHeight) / cellSize));
 
     cellCount = Vector2(columns, rows);
-    cells.resize(columns, std::vector<std::vector<Molecule *>>(rows));
+    cells.resize(columns, std::vector<Cell>(rows));
     wallCells.resize(columns, std::vector<std::vector<Wall *>>(rows));
 
     for (int x = 0; x < columns; ++x)
     {
         for (int y = 0; y < rows; ++y)
         {
-            cells[x][y] = std::vector<Molecule *>();
+            cells[x][y] = Cell();
             wallCells[x][y] = std::vector<Wall *>();
         }
     }
@@ -564,7 +568,7 @@ Vector2 Grid::place(float _x, float _y) const
 void Grid::add(Molecule *mol)
 {
     Vector2 cell = place(mol->position.x, mol->position.y);
-    cells[cell.x][cell.y].push_back(mol);
+    cells[cell.x][cell.y].push_back(mol->id);
     mol->cell = cell;
 }
 
@@ -626,10 +630,10 @@ void Grid::removeWall(Wall *wall)
 void Grid::remove(Molecule *mol)
 {
     const Vector2 &cell = mol->cell;
-    auto &cellMolecules = cells[cell.x][cell.y];
+    auto gridCell = cells[cell.x][cell.y];
 
-    auto newEnd = std::remove(cellMolecules.begin(), cellMolecules.end(), mol);
-    cellMolecules.erase(newEnd, cellMolecules.end());
+    auto newEnd = std::remove(gridCell.begin(), gridCell.end(), mol->id);
+    gridCell.erase(newEnd, gridCell.end());
 }
 
 void Grid::Render() const
@@ -654,7 +658,7 @@ void Grid::update(Molecule *mol)
     {
         remove(mol);
         mol->cell = newCell;
-        cells[newCell.x][newCell.y].push_back(mol);
+        cells[newCell.x][newCell.y].push_back(mol->id);
     }
 }
 
@@ -718,25 +722,23 @@ void Grid::updateWalls()
     }
 }
 
-std::vector<Molecule *> Grid::getZone(Molecule *mol)
+Cell Grid::getZone(Vector2 position, float radius, short id)
 {
-    Vector2 topLeft = place(Locate::Left(*mol), Locate::Top(*mol));
-    Vector2 bottomRight = place(Locate::Right(*mol), Locate::Bottom(*mol));
+    Vector2 topLeft = place(Locate::Left(position, radius), Locate::Top(position, radius));
+    Vector2 bottomRight = place(Locate::Right(position, radius), Locate::Bottom(position, radius));
 
-    int queryId = ++queryIds;
-    std::vector<Molecule *> zone;
+    Cell zone;
 
     for (int x = topLeft.x; x <= bottomRight.x; ++x)
     {
         for (int y = topLeft.y; y <= bottomRight.y; ++y)
         {
-            const auto &cellMolecules = cells[x][y];
-            for (Molecule *m : cellMolecules)
+            Cell cell = cells[x][y];
+            for (auto cid : cell)
             {
-                if (m->id != mol->id && m->queryId != queryId)
+                if (id != cid)
                 {
-                    m->queryId = queryId;
-                    zone.push_back(m);
+                    zone.push_back(cid);
                 }
             }
         }
@@ -825,7 +827,14 @@ void Grid::clear()
     }
 }
 
-float Locate::Left(const Molecule& m) { return m.position.x - m.radius; }
-float Locate::Right(const Molecule& m) { return m.position.x + m.radius; }
 float Locate::Top(const Molecule& m) { return m.position.y - m.radius; }
+float Locate::Top(Vector2 position, float radius) { return position.y - radius; }
+
+float Locate::Left(const Molecule& m) { return m.position.x - m.radius; }
+float Locate::Left(Vector2 position, float radius) { return position.x - radius; }
+
+float Locate::Right(const Molecule& m) { return m.position.x + m.radius; }
+float Locate::Right(Vector2 position, float radius) { return position.x + radius; }
+
 float Locate::Bottom(const Molecule& m) { return m.position.y + m.radius; }
+float Locate::Bottom(Vector2 position, float radius) { return position.y + radius; }

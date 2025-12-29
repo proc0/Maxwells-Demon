@@ -45,26 +45,24 @@ typedef struct Molecule
     float mass = 0.0f;
     float radius = 0.0f;
     float restitution = RESTITUTION;
-    int id = 0;
-    int queryId = 0;
+    short id = 0;
     bool active = false;
     bool collided = false;
     bool isHot = false;
     bool isLeft = false;
     bool isCounted = false;
+    bool isProcessed = false;
 } Molecule;
 
-typedef struct Cell {
-    // NOTE: why is this 48 bytes if it's array of pointers?
-    std::array<Molecule*, 5> molecules;
-    Vector2 position{};
-} Cell;
-
 namespace Locate {
-    float Left(const Molecule&);
-    float Right(const Molecule&);
     float Top(const Molecule&);
+    float Top(Vector2 position, float radius);
+    float Left(const Molecule&);
+    float Left(Vector2 position, float radius);
+    float Right(const Molecule&);
+    float Right(Vector2 position, float radius);
     float Bottom(const Molecule&);
+    float Bottom(Vector2 position, float radius);
 };
 
 typedef struct Wall
@@ -74,17 +72,16 @@ typedef struct Wall
     int id;
 } Wall;
 
+using Cell = std::vector<short>;
+
 class Grid
 {
-    // TODO: make into std::array - calculate comptime grid size with mol radius?
-    // if grid needs to be dynamic, maybe add isActive to cell to be checked, and use min radius?
-    std::vector<std::vector<std::vector<Molecule *>>> cells;
+    std::vector<std::vector<Cell>> cells;
     std::vector<std::vector<std::vector<Wall *>>> wallCells;
     std::vector<Wall> walls;
     Rectangle sensor = Rectangle({610, 300, 60, 200});
     Vector2 cellCount;
     float cellSize;
-    int queryIds = 0;
     int doorFrame = 0;
     bool isDoorClosing = false;
 
@@ -108,7 +105,7 @@ public:
     void updateWalls();
     void Render() const;
     void clear();
-    std::vector<Molecule *> getZone(Molecule *mol);
+    Cell getZone(Vector2 position, float radius, short id);
     std::vector<Wall *> getWalls(Molecule *mol);
 };
 

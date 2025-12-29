@@ -54,6 +54,12 @@ typedef struct Molecule
     bool isCounted = false;
 } Molecule;
 
+typedef struct Cell {
+    // NOTE: why is this 48 bytes if it's array of pointers?
+    std::array<Molecule*, 5> molecules;
+    Vector2 position{};
+} Cell;
+
 namespace Locate {
     float Left(const Molecule&);
     float Right(const Molecule&);
@@ -70,6 +76,8 @@ typedef struct Wall
 
 class Grid
 {
+    // TODO: make into std::array - calculate comptime grid size with mol radius?
+    // if grid needs to be dynamic, maybe add isActive to cell to be checked, and use min radius?
     std::vector<std::vector<std::vector<Molecule *>>> cells;
     std::vector<std::vector<std::vector<Wall *>>> wallCells;
     std::vector<Wall> walls;
@@ -87,6 +95,7 @@ public:
 
     void Load(int gridWidth, int gridHeight, float _cellSize);
     Vector2 place(float x, float y) const;
+    // TODO: make all functions pure?
     void add(Molecule *mol);
     void addWalls(std::vector<Rectangle> &wallRects);
     void addWall(Wall *wall);
@@ -143,6 +152,7 @@ public:
     void Test();
     void Unload();
     void Update();
+    // TODO: move physics simulation to a namespace
     void UpdateMovement(Molecule &mol, Vector2 force);
     void CheckBounds(Molecule &mol);
     void CheckCollision(Molecule &mol);

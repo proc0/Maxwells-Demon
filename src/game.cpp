@@ -32,9 +32,11 @@ void Game::Update()
 
     // Resize();
     chamber.Update();
-    gas.Update(chamber);
+    ThermalCount thermalCount = gas.Update(chamber);
     // TODO: find another way to share data between gas and chamber, maybe a struct with these numbers
     chamber.UpdateColors(gas.leftChamberCoolCount, gas.leftChamberHotCount, gas.rightChamberCoolCount, gas.rightChamberHotCount, gas.totalCoolCount, gas.totalHotCount);
+    entropy.Update(thermalCount);
+
 }
 
 void Game::Render() const
@@ -44,6 +46,7 @@ void Game::Render() const
 
     chamber.Render();
     gas.Render();
+    entropy.Render(gas.leftChamberCoolCount, gas.leftChamberHotCount, gas.rightChamberCoolCount, gas.rightChamberHotCount);
 
     // DrawFPS(20, 20);
     EndDrawing();
@@ -51,10 +54,12 @@ void Game::Render() const
 
 void Game::Load()
 {
-    chamber.Load();
-    gas.Load(chamber);
     gas.screenWidth = screenWidth;
     gas.screenHeight = screenHeight;
+    
+    chamber.Load();
+    ThermalCount thermalCount = gas.Load(chamber);
+    entropy.Load(thermalCount);
 }
 
 void Game::Unload()

@@ -2,15 +2,15 @@
 
 #include <array>
 // #include <vector>
-#include <raylib.h>
-#include <raymath.h>
+// #include <raylib.h>
+// #include <raymath.h>
 
+#include "common.hpp" // IWYU pragma: keep
 #include "grid.hpp"
 
 #define DOOR_MIN_Y 250.0f
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
-#define EASE_OUT_EXPO(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
 
 typedef struct Wall2
 {

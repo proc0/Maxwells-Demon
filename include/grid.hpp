@@ -1,32 +1,10 @@
 #pragma once
 
 #include <vector>
-#include <raylib.h>
-#include <raymath.h>
 #include <algorithm> // IWYU pragma: keep
-
-#define CONTAINER_WIDTH 800
-#define CONTAINER_HEIGHT 400
-#define CONTAINER_X 240
-#define CONTAINER_Y 200
-#define CONTAINER_BORDER 15
-#define CONTAINER_BORDER_WIDTH CONTAINER_WIDTH + CONTAINER_BORDER*2
-#define CONTAINER_BORDER_HEIGHT CONTAINER_HEIGHT + CONTAINER_BORDER*2
-#define CONTAINER_BORDER_X CONTAINER_X - CONTAINER_BORDER
-#define CONTAINER_BORDER_Y CONTAINER_Y - CONTAINER_BORDER
+#include "common.hpp" // IWYU pragma: keep
 
 using Cell = std::vector<short>;
-
-namespace Locate {
-    // float Top(const Molecule&);
-    float Top(Vector2 position, float radius);
-    // float Left(const Molecule&);
-    float Left(Vector2 position, float radius);
-    // float Right(const Molecule&);
-    float Right(Vector2 position, float radius);
-    // float Bottom(const Molecule&);
-    float Bottom(Vector2 position, float radius);
-};
 
 class Grid
 {

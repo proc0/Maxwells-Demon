@@ -2,10 +2,10 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <vector>
 #include <array>
 #include <algorithm> // IWYU pragma: keep
 
+#include "grid.hpp"
 #include "chamber.hpp"
 
 #define DENSITY 40
@@ -22,7 +22,7 @@
 // #define DOOR_MAX_Y 350.0f
 // #define DOOR_OPEN_FRAMES 60
 
-
+// TODO: expose MOLECULE_RAIDUS globally to resize grid accordingly
 #define MAX_SPEED 500.0f
 #define RESTITUTION 0.8f
 #define MOLECULE_RADIUS 12.0f
@@ -57,16 +57,6 @@ typedef struct Molecule
     bool isProcessed = false;
 } Molecule;
 
-namespace Locate {
-    float Top(const Molecule&);
-    float Top(Vector2 position, float radius);
-    float Left(const Molecule&);
-    float Left(Vector2 position, float radius);
-    float Right(const Molecule&);
-    float Right(Vector2 position, float radius);
-    float Bottom(const Molecule&);
-    float Bottom(Vector2 position, float radius);
-};
 
 // typedef struct Wall
 // {
@@ -75,64 +65,14 @@ namespace Locate {
 //     int id;
 // } Wall;
 
-using Cell = std::vector<short>;
-
-class Grid
-{
-    std::vector<std::vector<Cell>> cells;
-    std::vector<std::vector<Cell>> wallCells;
-    // Rectangle sensor = Rectangle({610, 300, 60, 200});
-    Vector2 cellCount;
-    float cellSize;
-    // int doorFrame = 0;
-    // bool isDoorClosing = false;
-
-public:
-
-    Grid(){};
-    ~Grid() = default;
-
-    void Load(short width, short height, float unit);
-    Vector2 place(float x, float y) const;
-    void addPoint(Vector2 point, short id);
-    void remove(Vector2 cell, short id);
-    Vector2 update(Vector2 point, Vector2 cell, short id);
-    Cell getZone(Vector2 point, float radius, short id);
-
-    void addArea(Rectangle rect, short id);
-    void removeArea(Rectangle area, short id);
-    Cell getArea(Vector2 point, float radius);
-
-    // TODO: move to chamber class
-    // bool checkSensor(Molecule &mol);
-    // bool checkTunneling(Vector2 position, float radius);
-    // void addWalls(std::vector<Rectangle> &wallRects);
-    // void updateWalls();
-    // void Render() const;
-    // TODO: consolidate walls with one Grid class? 
-    void addWall(const Wall2& wall);
-    void removeWall(const Wall2& wall);
-    Cell getWalls(Molecule *mol);
-};
-
 class Gas
 {
-    Grid grid;
     std::array<Molecule, DENSITY> molecules;
-    Rectangle containerLeft;
-    Rectangle containerRight;
-    // std::vector<Rectangle> wallRects = {Rectangle({633, 200, 15, 150}), Rectangle({633, 350, 15, 100}), Rectangle({633, 450, 15, 150})};
-    Color colorChamberLeft;
-    Color colorChamberRight;
     Color barColor;
+    Grid grid;
 
     const char *pipeText = ":";
-    float rightChamberHotCount = 0;
-    float rightChamberCoolCount = 0;
-    float leftChamberHotCount = 0;
-    float leftChamberCoolCount = 0;
-    float totalHotCount = 0;
-    float totalCoolCount = 0;
+
     float completion = 0.0f;
     float entropy = 0.0f;
     float maxEntropy = 0.0f;
@@ -144,7 +84,13 @@ class Gas
 public:
     int screenWidth = 1280;
     int screenHeight = 720;
-
+    float rightChamberHotCount = 0;
+    float rightChamberCoolCount = 0;
+    float leftChamberHotCount = 0;
+    float leftChamberCoolCount = 0;
+    float totalHotCount = 0;
+    float totalCoolCount = 0;
+    
     Gas(){};
     ~Gas() = default;
 

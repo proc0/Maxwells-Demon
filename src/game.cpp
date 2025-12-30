@@ -33,6 +33,8 @@ void Game::Update()
     // Resize();
     chamber.Update();
     gas.Update(chamber);
+    // TODO: find another way to share data between gas and chamber, maybe a struct with these numbers
+    chamber.UpdateColors(gas.leftChamberCoolCount, gas.leftChamberHotCount, gas.rightChamberCoolCount, gas.rightChamberHotCount, gas.totalCoolCount, gas.totalHotCount);
 }
 
 void Game::Render() const
@@ -49,6 +51,7 @@ void Game::Render() const
 
 void Game::Load()
 {
+    chamber.Load();
     gas.Load(chamber);
     gas.screenWidth = screenWidth;
     gas.screenHeight = screenHeight;
@@ -57,6 +60,7 @@ void Game::Load()
 void Game::Unload()
 {
     gas.Unload();
+    chamber.Unload();
 }
 
 void Game::Loop(void *self)

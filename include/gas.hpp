@@ -9,18 +9,18 @@
 #include "chamber.hpp"
 
 #define DENSITY 40
-#define CONTAINER_WIDTH 800
-#define CONTAINER_HEIGHT 400
-#define CONTAINER_X 240
-#define CONTAINER_Y 200
-#define CONTAINER_BORDER 15
-#define CONTAINER_BORDER_WIDTH CONTAINER_WIDTH + CONTAINER_BORDER*2
-#define CONTAINER_BORDER_HEIGHT CONTAINER_HEIGHT + CONTAINER_BORDER*2
-#define CONTAINER_BORDER_X CONTAINER_X - CONTAINER_BORDER
-#define CONTAINER_BORDER_Y CONTAINER_Y - CONTAINER_BORDER
-#define DOOR_MIN_Y 250.0f
-#define DOOR_MAX_Y 350.0f
-#define DOOR_OPEN_FRAMES 60
+// #define CONTAINER_WIDTH 800
+// #define CONTAINER_HEIGHT 400
+// #define CONTAINER_X 240
+// #define CONTAINER_Y 200
+// #define CONTAINER_BORDER 15
+// #define CONTAINER_BORDER_WIDTH CONTAINER_WIDTH + CONTAINER_BORDER*2
+// #define CONTAINER_BORDER_HEIGHT CONTAINER_HEIGHT + CONTAINER_BORDER*2
+// #define CONTAINER_BORDER_X CONTAINER_X - CONTAINER_BORDER
+// #define CONTAINER_BORDER_Y CONTAINER_Y - CONTAINER_BORDER
+// #define DOOR_MIN_Y 250.0f
+// #define DOOR_MAX_Y 350.0f
+// #define DOOR_OPEN_FRAMES 60
 
 
 #define MAX_SPEED 500.0f
@@ -31,7 +31,7 @@
 #define GRAVITY Vector2(0.0f, 982.0f)
 #define ZERO_VECTOR Vector2(0.0f, 0.0f)
 
-#define EASE_OUT_EXPO(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
+// #define EASE_OUT_EXPO(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
 
 typedef struct Molecule
 {
@@ -121,7 +121,7 @@ class Gas
     std::array<Molecule, DENSITY> molecules;
     Rectangle containerLeft;
     Rectangle containerRight;
-    std::vector<Rectangle> wallRects = {Rectangle({633, 200, 15, 150}), Rectangle({633, 350, 15, 100}), Rectangle({633, 450, 15, 150})};
+    // std::vector<Rectangle> wallRects = {Rectangle({633, 200, 15, 150}), Rectangle({633, 350, 15, 100}), Rectangle({633, 450, 15, 150})};
     Color colorChamberLeft;
     Color colorChamberRight;
     Color barColor;

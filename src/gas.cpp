@@ -1,7 +1,7 @@
 #include "gas.hpp"
 #include "raylib.h"
 
-void Gas::Load()
+void Gas::Load(const Chamber& chamber)
 {
     containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
     containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
@@ -9,7 +9,7 @@ void Gas::Load()
     colorChamberRight = RED;
     barColor = RED;
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
-    Populate();
+    Populate(chamber);
 }
 
 void Gas::Test()
@@ -48,9 +48,12 @@ void Gas::Test()
     grid.addPoint(molecules[1].position, 1);
 }
 
-void Gas::Populate()
+void Gas::Populate(const Chamber& chamber)
 {
-    grid.addWalls(wallRects);
+    // grid.addWalls(chamber.walls);
+    grid.addWall(chamber.walls[0]);
+    grid.addWall(chamber.walls[1]);
+    grid.addWall(chamber.walls[2]);
 
     int maxMoleculeType = DENSITY/2;
     for (short i = 0; i < DENSITY; i++)
@@ -84,7 +87,7 @@ void Gas::Populate()
             // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .force = isHot ? randForce : ZERO_VECTOR,
             .origin = ZERO_VECTOR,
-            .position = Spawn(MOLECULE_RADIUS),
+            .position = Spawn(MOLECULE_RADIUS, chamber),
             // .velocity = vel,
             .velocity = ZERO_VECTOR,
             .acceleration = ZERO_VECTOR,
@@ -137,7 +140,7 @@ void Gas::Populate()
     completion = entropy / maxEntropy;
 }
 
-Vector2 Gas::Spawn(float radius)
+Vector2 Gas::Spawn(float radius, const Chamber& chamber)
 {
     Vector2 position = {
         float(GetRandomValue(CONTAINER_X, CONTAINER_X + CONTAINER_WIDTH)), 
@@ -147,7 +150,7 @@ Vector2 Gas::Spawn(float radius)
     int retries = 12;
     while (retries >= 0)
     {
-        if (!grid.checkTunneling(position, radius))
+        if (!chamber.checkTunneling(position, radius))
             break;
 
         position = {
@@ -158,7 +161,7 @@ Vector2 Gas::Spawn(float radius)
         retries--;
     }
 
-    if (grid.checkTunneling(position, radius))
+    if (chamber.checkTunneling(position, radius))
     {
         position = {CONTAINER_X + 10, CONTAINER_Y + 10};
     }
@@ -169,13 +172,10 @@ Vector2 Gas::Spawn(float radius)
 void Gas::Render() const
 {
 
-    DrawRectangle(CONTAINER_BORDER_X, CONTAINER_BORDER_Y, CONTAINER_BORDER_WIDTH, CONTAINER_BORDER_HEIGHT, BLACK);
-    DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
-
     DrawRectangleRec(containerLeft, colorChamberLeft);
     DrawRectangleRec(containerRight, colorChamberRight);
 
-    grid.Render();
+    // grid.Render();
 
     for (const Molecule &mol : molecules)
     {
@@ -209,11 +209,11 @@ void Gas::Render() const
 
 }
 
-void Gas::Update()
+void Gas::Update(const Chamber& chamber)
 {
     for (Molecule &mol : molecules)
     {
-        CheckBounds(mol);
+        CheckBounds(mol, chamber);
         UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
         mol.cell = grid.update(mol.position, mol.cell, mol.id);
@@ -247,7 +247,7 @@ void Gas::Update()
     leftChamberHotCount = _leftChamberHotCount;
     leftChamberCoolCount = _leftChamberCoolCount;
 
-    grid.updateWalls();
+    // grid.updateWalls();
 
     entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
     completion = entropy / maxEntropy;
@@ -272,14 +272,15 @@ void Gas::Unload()
 {
 }
 
-void Gas::CheckBounds(Molecule &mol)
+void Gas::CheckBounds(Molecule &mol, const Chamber& chamber)
 {
 
-    std::vector<Wall *> wallZone = grid.getWalls(&mol);
+    Cell wallZone = grid.getWalls(&mol);
 
-    for (auto &wall : wallZone)
+    for (auto cid : wallZone)
     {
-        Rectangle wallRect = wall->rect;
+        Wall2 wall = chamber.walls[cid];
+        Rectangle wallRect = wall.rect;
         if (CheckCollisionCircleRec(mol.position, mol.radius, wallRect))
         {
             if (Locate::Right(mol) > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0)
@@ -339,7 +340,7 @@ void Gas::CheckBounds(Molecule &mol)
         mol.force.y *= -mol.restitution;
     }
 
-    if (grid.checkSensor(mol))
+    if (chamber.checkSensor(mol.position, mol.radius))
     {
         mol.isCounted = true;
         if (mol.position.x > static_cast<float>(screenWidth)/2.0f)
@@ -528,6 +529,8 @@ float Gas::calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, fl
     return log(hotEntropy * coldEntropy);
 }
 
+// GRID
+
 void Grid::Load(short width, short height, float unit)
 {
     cellSize = unit;
@@ -536,14 +539,14 @@ void Grid::Load(short width, short height, float unit)
 
     cellCount = Vector2(columns, rows);
     cells.resize(columns, std::vector<Cell>(rows));
-    wallCells.resize(columns, std::vector<std::vector<Wall *>>(rows));
+    wallCells.resize(columns, std::vector<Cell>(rows));
 
     for (short x = 0; x < columns; ++x)
     {
         for (short y = 0; y < rows; ++y)
         {
             cells[x][y] = Cell();
-            wallCells[x][y] = std::vector<Wall *>();
+            wallCells[x][y] = Cell();
         }
     }
 }
@@ -583,7 +586,7 @@ void Grid::addArea(Rectangle area, short id)
     {
         for (int y = cell.y; y < cell.y + heightCells; y++)
         {
-            cells[x][y].push_back(id);
+            wallCells[x][y].push_back(id);
             // wall->cells.push_back(Vector2(x, y));
         }
     }
@@ -600,7 +603,7 @@ void Grid::removeArea(Rectangle area, short id)
     {
         for (int y = position.y; y < position.y + heightCells; y++)
         {
-            auto &cell = cells[x][y];
+            auto &cell = wallCells[x][y];
 
             auto newEnd = std::remove(cell.begin(), cell.end(), id);
             cell.erase(newEnd, cell.end());
@@ -608,58 +611,93 @@ void Grid::removeArea(Rectangle area, short id)
     }
 }
 
-
-void Grid::addWalls(std::vector<Rectangle> &wallRects)
+Cell Grid::getArea(Vector2 point, float radius)
 {
-    for (int i = 0; i < (int)wallRects.size(); i++)
+    Vector2 topLeft = place(Locate::Left(point, radius), Locate::Top(point, radius));
+    Vector2 bottomRight = place(Locate::Right(point, radius), Locate::Bottom(point, radius));
+
+    Cell wallZone;
+    std::vector<short> processed;
+    for (short x = topLeft.x; x <= bottomRight.x; ++x)
     {
-        Wall wall = {
-            .rect = wallRects.at(i),
-            // .cells = std::vector<Vector2>(),
-            .id = i,
-        };
-        walls.push_back(wall);
-        // addWall(&walls.back());
+        for (short y = topLeft.y; y <= bottomRight.y; ++y)
+        {
+            auto cell = wallCells[x][y];
+            for (auto cid : cell)
+            {
+                bool isProcessed = false;
+                for (short procId : processed)
+                {
+                    if (procId == cid)
+                    {
+                        isProcessed = true;
+                        break;
+                    }
+                }
+                if (!isProcessed)
+                {
+                    wallZone.push_back(cid);
+                    processed.push_back(cid);
+                }
+            }
+        }
     }
 
-    for (auto &wall : walls)
-    {
-        addWall(&wall);
-    }
+    return wallZone;
 }
 
-void Grid::addWall(Wall *wall)
-{
-    Vector2 cell = place(wall->rect.x, wall->rect.y);
 
-    int widthCells = ceil(wall->rect.width / cellSize);
-    int heightCells = ceil(wall->rect.height / cellSize);
+// void Grid::addWalls(std::vector<Rectangle> &wallRects)
+// {
+//     for (int i = 0; i < (int)wallRects.size(); i++)
+//     {
+//         Wall wall = {
+//             .rect = wallRects.at(i),
+//             // .cells = std::vector<Vector2>(),
+//             .id = i,
+//         };
+//         walls.push_back(wall.id);
+//         // addWall(&walls.back());
+//     }
+
+//     for (auto &wall : walls)
+//     {
+//         addWall(&wall);
+//     }
+// }
+
+void Grid::addWall(const Wall2& wall)
+{
+    Vector2 cell = place(wall.rect.x, wall.rect.y);
+
+    int widthCells = ceil(wall.rect.width / cellSize);
+    int heightCells = ceil(wall.rect.height / cellSize);
 
     for (int x = cell.x; x < cell.x + widthCells; x++)
     {
         for (int y = cell.y; y < cell.y + heightCells; y++)
         {
-            wallCells[x][y].push_back(wall);
-            wall->cells.push_back(Vector2(x, y));
+            wallCells[x][y].push_back(wall.id);
+            // wall->cells.push_back(Vector2(x, y));
         }
     }
 }
 
-void Grid::removeWall(Wall *wall)
+void Grid::removeWall(const Wall2& wall)
 {
-    Vector2 cell = place(wall->rect.x, wall->rect.y);
+    Vector2 cell = place(wall.rect.x, wall.rect.y);
 
-    int widthCells = ceil(wall->rect.width / cellSize);
-    int heightCells = ceil(wall->rect.height / cellSize);
+    int widthCells = ceil(wall.rect.width / cellSize);
+    int heightCells = ceil(wall.rect.height / cellSize);
 
     for (int x = cell.x; x < cell.x + widthCells; x++)
     {
         for (int y = cell.y; y < cell.y + heightCells; y++)
         {
-            auto &cellWalls = wallCells[x][y];
+            auto& wallCell = wallCells[x][y];
 
-            auto newEnd = std::remove(cellWalls.begin(), cellWalls.end(), wall);
-            cellWalls.erase(newEnd, cellWalls.end());
+            auto newEnd = std::remove(wallCell.begin(), wallCell.end(), wall.id);
+            wallCell.erase(newEnd, wallCell.end());
         }
     }
 }
@@ -672,20 +710,20 @@ void Grid::remove(Vector2 cell, short id)
     gridCell.erase(newEnd, gridCell.end());
 }
 
-void Grid::Render() const
-{
-    // for (int x = 0; x < cellCount.x; ++x) {
-    //     for (int y = 0; y < cellCount.y; ++y) {
-    //         DrawPixel(x*cellSize + CONTAINER_X, y*cellSize + CONTAINER_Y, RED);
-    //     }
-    // }
-    // DrawRectangleRec(sensor, RED);
+// void Grid::Render() const
+// {
+//     // for (int x = 0; x < cellCount.x; ++x) {
+//     //     for (int y = 0; y < cellCount.y; ++y) {
+//     //         DrawPixel(x*cellSize + CONTAINER_X, y*cellSize + CONTAINER_Y, RED);
+//     //     }
+//     // }
+//     // DrawRectangleRec(sensor, RED);
 
-    for (const Wall &wall : walls)
-    {
-        DrawRectangleRec(wall.rect, BLACK);
-    }
-}
+//     for (const Wall &wall : walls)
+//     {
+//         DrawRectangleRec(wall.rect, BLACK);
+//     }
+// }
 
 Vector2 Grid::update(Vector2 point, Vector2 cell, short id)
 {
@@ -700,59 +738,59 @@ Vector2 Grid::update(Vector2 point, Vector2 cell, short id)
     return Vector2(0, 0);
 }
 
-void Grid::updateWalls()
-{
-    Wall *wall = &walls[1];
+// void Grid::updateWalls()
+// {
+//     Wall *wall = &walls[1];
 
-    if (IsKeyReleased(KEY_SPACE))
-    {
-        isDoorClosing = true;
-    }
+//     if (IsKeyReleased(KEY_SPACE))
+//     {
+//         isDoorClosing = true;
+//     }
 
-    if (isDoorClosing)
-    {
+//     if (isDoorClosing)
+//     {
 
-        if (doorFrame == 0 && wall->rect.y < DOOR_MAX_Y)
-        {
-            doorFrame = DOOR_OPEN_FRAMES;
-        }
+//         if (doorFrame == 0 && wall->rect.y < DOOR_MAX_Y)
+//         {
+//             doorFrame = DOOR_OPEN_FRAMES;
+//         }
 
-        if (doorFrame > 0)
-        {
-            float displacement = EASE_OUT_EXPO((1 / (float)doorFrame) * DOOR_OPEN_FRAMES);
-            wall->rect.y += displacement * 10;
-            if (wall->rect.y >= DOOR_MAX_Y)
-            {
-                wall->rect.y = DOOR_MAX_Y;
-                isDoorClosing = false;
-            }
-            // addWall(wall);
-        }
-    }
+//         if (doorFrame > 0)
+//         {
+//             float displacement = EASE_OUT_EXPO((1 / (float)doorFrame) * DOOR_OPEN_FRAMES);
+//             wall->rect.y += displacement * 10;
+//             if (wall->rect.y >= DOOR_MAX_Y)
+//             {
+//                 wall->rect.y = DOOR_MAX_Y;
+//                 isDoorClosing = false;
+//             }
+//             // addWall(wall);
+//         }
+//     }
 
-    if (IsKeyDown(KEY_SPACE))
-    {
-        isDoorClosing = false;
+//     if (IsKeyDown(KEY_SPACE))
+//     {
+//         isDoorClosing = false;
 
-        if (doorFrame == 0 && wall->rect.y > DOOR_MIN_Y)
-        {
-            doorFrame = DOOR_OPEN_FRAMES;
-        }
+//         if (doorFrame == 0 && wall->rect.y > DOOR_MIN_Y)
+//         {
+//             doorFrame = DOOR_OPEN_FRAMES;
+//         }
 
-        if (doorFrame > 0)
-        {
-            float displacement = EASE_OUT_EXPO((1 / (float)doorFrame) * DOOR_OPEN_FRAMES);
-            wall->rect.y -= displacement * 10;
-            if (wall->rect.y <= DOOR_MIN_Y)
-            {
-                wall->rect.y = DOOR_MIN_Y;
-            }
-            // removeWall(wall);
+//         if (doorFrame > 0)
+//         {
+//             float displacement = EASE_OUT_EXPO((1 / (float)doorFrame) * DOOR_OPEN_FRAMES);
+//             wall->rect.y -= displacement * 10;
+//             if (wall->rect.y <= DOOR_MIN_Y)
+//             {
+//                 wall->rect.y = DOOR_MIN_Y;
+//             }
+//             // removeWall(wall);
 
-            doorFrame--;
-        }
-    }
-}
+//             doorFrame--;
+//         }
+//     }
+// }
 
 Cell Grid::getZone(Vector2 point, float radius, short id)
 {
@@ -779,24 +817,24 @@ Cell Grid::getZone(Vector2 point, float radius, short id)
     return zone;
 }
 
-std::vector<Wall *> Grid::getWalls(Molecule *mol)
+Cell Grid::getWalls(Molecule *mol)
 {
     Vector2 topLeft = place(Locate::Left(*mol), Locate::Top(*mol));
     Vector2 bottomRight = place(Locate::Right(*mol), Locate::Bottom(*mol));
 
-    std::vector<Wall *> wallZone;
-    std::vector<int> processed;
-    for (int x = topLeft.x; x <= bottomRight.x; ++x)
+    Cell wallZone;
+    std::vector<short> processed;
+    for (short x = topLeft.x; x <= bottomRight.x; ++x)
     {
-        for (int y = topLeft.y; y <= bottomRight.y; ++y)
+        for (short y = topLeft.y; y <= bottomRight.y; ++y)
         {
-            const auto &wallBounds = wallCells[x][y];
-            for (auto &wall : wallBounds)
+            const auto &wallCell = wallCells[x][y];
+            for (auto cid : wallCell)
             {
                 bool isProcessed = false;
-                for (int procId : processed)
+                for (short procId : processed)
                 {
-                    if (procId == wall->id)
+                    if (procId == cid)
                     {
                         isProcessed = true;
                         break;
@@ -804,8 +842,8 @@ std::vector<Wall *> Grid::getWalls(Molecule *mol)
                 }
                 if (!isProcessed)
                 {
-                    wallZone.push_back(wall);
-                    processed.push_back(wall->id);
+                    wallZone.push_back(cid);
+                    processed.push_back(cid);
                 }
             }
         }
@@ -814,39 +852,39 @@ std::vector<Wall *> Grid::getWalls(Molecule *mol)
     return wallZone;
 }
 
-bool Grid::checkTunneling(Vector2 position, float radius)
-{
-    bool isIntersect = false;
-    for (auto &wall : walls)
-    {
-        if (CheckCollisionCircleRec(position, radius, wall.rect))
-        {
-            isIntersect = true;
-            break;
-        }
-    }
+// bool Grid::checkTunneling(Vector2 position, float radius)
+// {
+//     bool isIntersect = false;
+//     for (auto &wall : walls)
+//     {
+//         if (CheckCollisionCircleRec(position, radius, wall.rect))
+//         {
+//             isIntersect = true;
+//             break;
+//         }
+//     }
 
-    return isIntersect;
-};
+//     return isIntersect;
+// };
 
-bool Grid::checkSensor(Molecule &mol)
-{
-    Vector2 sensorCell = place(sensor.x, sensor.y);
+// bool Grid::checkSensor(Molecule &mol)
+// {
+//     Vector2 sensorCell = place(sensor.x, sensor.y);
 
-    int widthCells = ceil(sensor.width / cellSize);
-    int heightCells = ceil(sensor.height / cellSize);
+//     int widthCells = ceil(sensor.width / cellSize);
+//     int heightCells = ceil(sensor.height / cellSize);
 
-    bool isDetected = false;
-    for (int x = sensorCell.x; x < sensorCell.x + widthCells; x++)
-    {
-        for (int y = sensorCell.y; y < sensorCell.y + heightCells; y++)
-        {
-            isDetected = CheckCollisionCircleRec(mol.position, mol.radius, sensor);
-        }
-    }
+//     bool isDetected = false;
+//     for (int x = sensorCell.x; x < sensorCell.x + widthCells; x++)
+//     {
+//         for (int y = sensorCell.y; y < sensorCell.y + heightCells; y++)
+//         {
+//             isDetected = CheckCollisionCircleRec(mol.position, mol.radius, sensor);
+//         }
+//     }
 
-    return isDetected;
-}
+//     return isDetected;
+// }
 
 float Locate::Top(const Molecule& m) { return m.position.y - m.radius; }
 float Locate::Top(Vector2 position, float radius) { return position.y - radius; }

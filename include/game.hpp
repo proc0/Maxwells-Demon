@@ -6,6 +6,7 @@
 #include <raylib.h>
 
 #include "gas.hpp"
+#include "chamber.hpp"
 
 // initial screen dimensions
 #define SCREEN_WIDTH 1280
@@ -14,7 +15,8 @@
 
 class Game {
     Gas gas;
-
+    Chamber chamber;
+    
     public:
         int screenWidth = SCREEN_WIDTH;
         int screenHeight = SCREEN_HEIGHT;

@@ -31,7 +31,8 @@ void Game::Update()
 {
 
     // Resize();
-    gas.Update();
+    chamber.Update();
+    gas.Update(chamber);
 }
 
 void Game::Render() const
@@ -39,6 +40,7 @@ void Game::Render() const
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
+    chamber.Render();
     gas.Render();
 
     // DrawFPS(20, 20);
@@ -47,7 +49,7 @@ void Game::Render() const
 
 void Game::Load()
 {
-    gas.Load();
+    gas.Load(chamber);
     gas.screenWidth = screenWidth;
     gas.screenHeight = screenHeight;
 }

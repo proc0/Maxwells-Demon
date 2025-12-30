@@ -6,6 +6,8 @@
 #include <array>
 #include <algorithm> // IWYU pragma: keep
 
+#include "chamber.hpp"
+
 #define DENSITY 40
 #define CONTAINER_WIDTH 800
 #define CONTAINER_HEIGHT 400
@@ -51,6 +53,7 @@ typedef struct Molecule
     bool isHot = false;
     bool isLeft = false;
     bool isCounted = false;
+    //TODO: hook this up to avoid processing molecule more than once in getZone
     bool isProcessed = false;
 } Molecule;
 
@@ -65,25 +68,24 @@ namespace Locate {
     float Bottom(Vector2 position, float radius);
 };
 
-typedef struct Wall
-{
-    Rectangle rect;
-    std::vector<Vector2> cells;
-    int id;
-} Wall;
+// typedef struct Wall
+// {
+//     Rectangle rect;
+//     std::vector<Vector2> cells;
+//     int id;
+// } Wall;
 
 using Cell = std::vector<short>;
 
 class Grid
 {
     std::vector<std::vector<Cell>> cells;
-    std::vector<std::vector<std::vector<Wall *>>> wallCells;
-    std::vector<Wall> walls;
-    Rectangle sensor = Rectangle({610, 300, 60, 200});
+    std::vector<std::vector<Cell>> wallCells;
+    // Rectangle sensor = Rectangle({610, 300, 60, 200});
     Vector2 cellCount;
     float cellSize;
-    int doorFrame = 0;
-    bool isDoorClosing = false;
+    // int doorFrame = 0;
+    // bool isDoorClosing = false;
 
 public:
 
@@ -99,17 +101,18 @@ public:
 
     void addArea(Rectangle rect, short id);
     void removeArea(Rectangle area, short id);
-    
+    Cell getArea(Vector2 point, float radius);
+
     // TODO: move to chamber class
-    bool checkSensor(Molecule &mol);
-    bool checkTunneling(Vector2 position, float radius);
-    void addWalls(std::vector<Rectangle> &wallRects);
-    void updateWalls();
-    void Render() const;
+    // bool checkSensor(Molecule &mol);
+    // bool checkTunneling(Vector2 position, float radius);
+    // void addWalls(std::vector<Rectangle> &wallRects);
+    // void updateWalls();
+    // void Render() const;
     // TODO: consolidate walls with one Grid class? 
-    void addWall(Wall *wall);
-    void removeWall(Wall *wall);
-    std::vector<Wall *> getWalls(Molecule *mol);
+    void addWall(const Wall2& wall);
+    void removeWall(const Wall2& wall);
+    Cell getWalls(Molecule *mol);
 };
 
 class Gas
@@ -145,16 +148,16 @@ public:
     Gas(){};
     ~Gas() = default;
 
-    void Load();
+    void Load(const Chamber& chamber);
     void Render() const;
-    void Populate();
-    Vector2 Spawn(float radius);
+    void Populate(const Chamber& chamber);
+    Vector2 Spawn(float radius, const Chamber& chamber);
     void Test();
     void Unload();
-    void Update();
+    void Update(const Chamber& chamber);
     // TODO: move physics simulation to a namespace
     void UpdateMovement(Molecule &mol, Vector2 force);
-    void CheckBounds(Molecule &mol);
+    void CheckBounds(Molecule &mol, const Chamber& chamber);
     void CheckCollision(Molecule &mol);
     void CollideZone(Molecule &mol);
     void Collide(Molecule &m1, Molecule *m2);

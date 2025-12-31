@@ -41,56 +41,30 @@ typedef struct Molecule
     bool isProcessed = false;
 } Molecule;
 
-
-// typedef struct Wall
-// {
-//     Rectangle rect;
-//     std::vector<Vector2> cells;
-//     int id;
-// } Wall;
-
 class Gas
 {
     std::array<Molecule, DENSITY> molecules;
     Grid grid;
 
-    // Color barColor;
-    // const char *pipeText = ":";
-
-    // float completion = 0.0f;
-    // float entropy = 0.0f;
-    // float maxEntropy = 0.0f;
-    // int entropyBarLength = CONTAINER_BORDER_WIDTH - 100;
-    // int entropyBar = 0;
-    // int entropyBarX = CONTAINER_BORDER_X + 50;
-    // int entropyBarY = 40;
-
 public:
     int screenWidth = 1280;
     int screenHeight = 720;
-    // float rightChamberHotCount = 0;
-    // float rightChamberCoolCount = 0;
-    // float leftChamberHotCount = 0;
-    // float leftChamberCoolCount = 0;
-    // float totalHotCount = 0;
-    // float totalCoolCount = 0;
 
     Gas(){};
     ~Gas() = default;
 
     ThermalCount Load(const Chamber& chamber);
-    void Render() const;
     ThermalCount Populate(const Chamber& chamber);
-    Vector2 Spawn(float radius, const Chamber& chamber);
-    void Test();
-    void Unload();
     ThermalCount Update(const Chamber& chamber);
-    // TODO: move physics simulation to a namespace
-    void UpdateMovement(Molecule &mol, Vector2 force);
+    Vector2 Spawn(float radius, const Chamber& chamber);
+    void Render() const;
+
     void CheckBounds(Molecule &mol, const Chamber& chamber);
+    void UpdateMovement(Molecule &mol, Vector2 force);
     void CheckCollision(Molecule &mol);
     void CollideZone(Molecule &mol);
     void Collide(Molecule &m1, Molecule *m2);
     void Repulse(Molecule &m1, Molecule *m2);
-
+    
+    void Unload();
 };

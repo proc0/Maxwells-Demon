@@ -9,41 +9,41 @@ ThermalCount Gas::Load(const Chamber& chamber)
     return Populate(chamber);
 }
 
-void Gas::Test()
-{
+// void Gas::Test()
+// {
 
-    molecules[0] = {
-        .force = {10, 0},
-        .origin = {0.0f, 0.0f},
-        .position = {CONTAINER_X + 250, CONTAINER_Y + 200},
-        .velocity = {0.0f, 0.0f},
-        .acceleration = {0.0f, 0.0f},
-        .color = RED,
-        .mass = 1.0f,
-        .radius = MOLECULE_RADIUS,
-        .id = 0,
-        .active = true,
-        .collided = false,
-    };
+//     molecules[0] = {
+//         .force = {10, 0},
+//         .origin = {0.0f, 0.0f},
+//         .position = {CONTAINER_X + 250, CONTAINER_Y + 200},
+//         .velocity = {0.0f, 0.0f},
+//         .acceleration = {0.0f, 0.0f},
+//         .color = RED,
+//         .mass = 1.0f,
+//         .radius = MOLECULE_RADIUS,
+//         .id = 0,
+//         .active = true,
+//         .collided = false,
+//     };
 
-    grid.addPoint(molecules[0].position, 0);
+//     grid.addPoint(molecules[0].position, 0);
 
-    molecules[1] = {
-        .force = {-10, 5},
-        .origin = {0.0f, 0.0f},
-        .position = {CONTAINER_X + 450, CONTAINER_Y + 150},
-        .velocity = {0.0f, 0.0f},
-        .acceleration = {0.0f, 0.0f},
-        .color = BLUE,
-        .mass = 1.0f,
-        .radius = MOLECULE_RADIUS,
-        .id = 1,
-        .active = true,
-        .collided = false,
-    };
+//     molecules[1] = {
+//         .force = {-10, 5},
+//         .origin = {0.0f, 0.0f},
+//         .position = {CONTAINER_X + 450, CONTAINER_Y + 150},
+//         .velocity = {0.0f, 0.0f},
+//         .acceleration = {0.0f, 0.0f},
+//         .color = BLUE,
+//         .mass = 1.0f,
+//         .radius = MOLECULE_RADIUS,
+//         .id = 1,
+//         .active = true,
+//         .collided = false,
+//     };
 
-    grid.addPoint(molecules[1].position, 1);
-}
+//     grid.addPoint(molecules[1].position, 1);
+// }
 
 ThermalCount Gas::Populate(const Chamber& chamber)
 {

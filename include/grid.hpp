@@ -5,7 +5,7 @@
 #include <algorithm> // IWYU pragma: keep
 #include "common.hpp" // IWYU pragma: keep
 
-#define MAX_CACHE_SIZE 5
+#define MAX_CACHE_SIZE 9
 
 using Cell = std::vector<short>;
 
@@ -30,4 +30,6 @@ public:
     void AddArea(Rectangle rect, short id);
     void RemoveArea(Rectangle area, short id);
     Cell ZoneArea(Vector2 point, float radius) const;
+
+    void CacheClear();
 };

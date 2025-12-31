@@ -143,3 +143,7 @@ Cell Grid::ZoneArea(Vector2 point, float radius) const {
 
     return zone;
 }
+
+void Grid::CacheClear() {
+    cache.fill(0);
+}

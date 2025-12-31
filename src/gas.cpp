@@ -151,6 +151,8 @@ Thermal Gas::Update(const Chamber& chamber)
         mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
     }
 
+    grid.CacheClear();
+    
     float rightChamberHotCount = 0.0f;
     float rightChamberCoolCount = 0.0f;
     float leftChamberHotCount = 0.0f;
@@ -192,98 +194,65 @@ void Gas::CheckBounds(Molecule &mol, const Chamber& chamber)
 
     Cell wallZone = chamber.GetWalls(mol.position, mol.radius);
 
-    for (auto cid : wallZone)
-    {
+    for (auto cid : wallZone) {
         const Wall& wall = chamber.GetWall(cid);
         const Rectangle& wallRect = wall.rect;
-        if (CheckCollisionCircleRec(mol.position, mol.radius, wallRect))
-        {
-            if (Locate::Right(mol.position, mol.radius) > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0)
-            {
+
+        if (CheckCollisionCircleRec(mol.position, mol.radius, wallRect)) {
+            if (Locate::Right(mol.position, mol.radius) > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0) {
                 mol.position.x = wallRect.x - mol.radius - 2;
                 mol.velocity.x *= -mol.restitution;
                 mol.force.x *= -mol.restitution;
-            }
-            else if (Locate::Left(mol.position, mol.radius) < wallRect.x + wallRect.width && mol.position.x > wallRect.x && mol.velocity.x < 0)
-            {
+            } else if (Locate::Left(mol.position, mol.radius) < wallRect.x + wallRect.width && mol.position.x > wallRect.x && mol.velocity.x < 0) {
                 mol.position.x = wallRect.x + wallRect.width + mol.radius + 2;
                 mol.velocity.x *= -mol.restitution;
                 mol.force.x *= -mol.restitution;
-            }
-            else if (mol.position.x + mol.radius > wallRect.width + wallRect.x)
-            {
+            } else if (mol.position.x + mol.radius > wallRect.width + wallRect.x) {
                 mol.velocity.x *= -mol.restitution;
-            }
-            else if (mol.position.x - mol.radius < wallRect.x)
-            {
+            } else if (mol.position.x - mol.radius < wallRect.x) {
                 mol.velocity.x *= -mol.restitution;
-            }
-            else if (mol.position.y + mol.radius > wallRect.height + wallRect.y)
-            {
+            } else if (mol.position.y + mol.radius > wallRect.height + wallRect.y) {
                 mol.velocity.y *= -mol.restitution;
-            }
-            else if (mol.position.y - mol.radius < wallRect.y)
-            {
+            } else if (mol.position.y - mol.radius < wallRect.y) {
                 mol.velocity.y *= -mol.restitution;
             }
         }
     }
 
-    if (mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X)
-    {
+    if (mol.position.x + mol.radius > CONTAINER_WIDTH + CONTAINER_X) {
         mol.position.x = CONTAINER_WIDTH + CONTAINER_X - mol.radius;
         mol.velocity.x *= -mol.restitution;
         mol.force.x *= -mol.restitution;
-    }
-    else if (mol.position.x - mol.radius < CONTAINER_X)
-    {
+    } else if (mol.position.x - mol.radius < CONTAINER_X) {
         mol.position.x = CONTAINER_X + mol.radius;
         mol.velocity.x *= -mol.restitution;
         mol.force.x *= -mol.restitution;
     }
 
-    if (mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y)
-    {
+    if (mol.position.y + mol.radius > CONTAINER_HEIGHT + CONTAINER_Y) {
         mol.position.y = CONTAINER_HEIGHT + CONTAINER_Y - mol.radius;
         mol.velocity.y *= -mol.restitution;
         mol.force.y *= -mol.restitution;
-    }
-    else if (mol.position.y - mol.radius < CONTAINER_Y)
-    {
+    } else if (mol.position.y - mol.radius < CONTAINER_Y) {
         mol.position.y = CONTAINER_Y + mol.radius;
         mol.velocity.y *= -mol.restitution;
         mol.force.y *= -mol.restitution;
     }
 
-    if (chamber.IsDetected(mol.position, mol.radius))
-    {
+    if (chamber.IsDetected(mol.position, mol.radius)) {
         mol.isLeft = chamber.IsLeft(mol.position, mol.radius);
-        // if (mol.position.x > static_cast<float>(screenWidth)/2.0f)
-        // {
-        //     mol.isLeft = false;
-        // }
-        // else
-        // {
-        //     mol.isLeft = true;
-        // }
     }
 }
 
-void Gas::CheckCollision(Molecule &mol)
-{
+void Gas::CheckCollision(Molecule &mol) {
     Cell zone = grid.ZonePoint(mol.position, mol.radius, mol.id);
 
-    for (auto cid : zone)
-    {
-        if (cid == mol.id)
-        {
-            continue;
-        }
+    for (auto cid : zone) {
+        if (cid == mol.id) continue;
 
         Molecule* other = &molecules[cid];
 
-        if (CheckCollisionCircles(other->position, other->radius, mol.position, mol.radius))
-        {
+        if (CheckCollisionCircles(other->position, other->radius, mol.position, mol.radius)) {
             Repulse(mol, other);
             other->collided = true;
             mol.collided = true;
@@ -291,28 +260,21 @@ void Gas::CheckCollision(Molecule &mol)
     }
 }
 
-void Gas::CollideZone(Molecule &mol)
-{
-    if (!mol.collided)
-        return;
+void Gas::CollideZone(Molecule &mol) {
+    if (!mol.collided) return;
 
     Cell zone = grid.ZonePoint(mol.position, mol.radius, mol.id);
 
-    for (auto cid : zone)
-    {
+    for (auto cid : zone) {
         Molecule* other = &molecules[cid];
 
-        if (cid == mol.id || !other->collided)
-        {
-            continue;
-        }
+        if (cid == mol.id || !other->collided) continue;
 
         Collide(mol, other);
     }
 }
 
-void Gas::Collide(Molecule &m1, Molecule *m2)
-{
+void Gas::Collide(Molecule &m1, Molecule *m2) {
     Vector2 normal = m1.position - m2->position;
     Vector2 unitNormal = Vector2Normalize(normal);
     Vector2 unitTangent = Vector2(-unitNormal.y, unitNormal.x);
@@ -338,8 +300,7 @@ void Gas::Collide(Molecule &m1, Molecule *m2)
     m2->collided = false;
 }
 
-void Gas::Repulse(Molecule &m1, Molecule *m2)
-{
+void Gas::Repulse(Molecule &m1, Molecule *m2) {
     const float molDistance = Vector2Distance(m1.position, m2->position);
     const float collideDistance = m1.radius + m2->radius;
 
@@ -354,8 +315,7 @@ void Gas::Repulse(Molecule &m1, Molecule *m2)
     m2->position += repulse2 / m2->mass;
 }
 
-void Gas::UpdateMovement(Molecule &mol, Vector2 force)
-{
+void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     // Velocity Verlet Integration
     // (i)   x(t+Δt) = x(t) + v(t)Δt + 1/2a(t)Δt^2
     // (ii)  a(t+Δt) = f(x(t+Δt))

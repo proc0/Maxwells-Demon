@@ -20,25 +20,16 @@ typedef struct Wall
 
 class Chamber {
     std::array<Wall, 3> walls = {
-    	Wall({ 
-    		.rect = Rectangle({633, 200, 15, 150}),
-    		.id = 0,
-    	}),
-    	Wall({
-    		.rect = Rectangle({633, 350, 15, 100}),
-    		.id = 1, 
-    	}),
-    	Wall({
-    		.rect = Rectangle({633, 450, 15, 150}),
-    		.id = 2,
-    	})
+    	Wall({ Rectangle({633, 200, 15, 150}), 0 }),
+    	Wall({ Rectangle({633, 350, 15, 100}), 1 }),
+    	Wall({ Rectangle({633, 450, 15, 150}), 2 })
     };
-	Rectangle sensor = Rectangle({610, 300, 60, 200});
-    Color colorChamberLeft;
-    Color colorChamberRight;
 	Grid grid;
-    Rectangle containerLeft;
-    Rectangle containerRight;
+	Rectangle sensor = Rectangle({610, 300, 60, 200});
+    Rectangle containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
+    Rectangle containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
+    Color colorChamberLeft = BLUE;
+    Color colorChamberRight = BLUE;
     float totalHotCount = 0;
     float totalCoolCount = 0;
     int doorFrame = 0;

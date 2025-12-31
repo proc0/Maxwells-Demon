@@ -68,12 +68,12 @@ class Gas
 public:
     int screenWidth = 1280;
     int screenHeight = 720;
-    float rightChamberHotCount = 0;
-    float rightChamberCoolCount = 0;
-    float leftChamberHotCount = 0;
-    float leftChamberCoolCount = 0;
-    float totalHotCount = 0;
-    float totalCoolCount = 0;
+    // float rightChamberHotCount = 0;
+    // float rightChamberCoolCount = 0;
+    // float leftChamberHotCount = 0;
+    // float leftChamberCoolCount = 0;
+    // float totalHotCount = 0;
+    // float totalCoolCount = 0;
 
     Gas(){};
     ~Gas() = default;

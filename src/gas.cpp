@@ -53,6 +53,14 @@ ThermalCount Gas::Populate(const Chamber& chamber)
     // grid.addWall(chamber.walls[2]);
 
     int maxMoleculeType = DENSITY/2;
+
+    float leftChamberHotCount = 0;
+    float leftChamberCoolCount = 0;
+    float rightChamberHotCount = 0;
+    float rightChamberCoolCount = 0;
+    float totalHotCount = 0;
+    float totalCoolCount = 0;
+
     for (short i = 0; i < DENSITY; i++)
     {
         if (molecules[i].active)
@@ -101,6 +109,7 @@ ThermalCount Gas::Populate(const Chamber& chamber)
         };
 
         grid.addPoint(molecules[i].position, i);
+
 
         if (molecules[i].isHot)
         {
@@ -220,33 +229,33 @@ ThermalCount Gas::Update(const Chamber& chamber)
         mol.cell = grid.update(mol.position, mol.cell, mol.id);
     }
 
-    float _rightChamberHotCount = 0.0f;
-    float _rightChamberCoolCount = 0.0f;
-    float _leftChamberHotCount = 0.0f;
-    float _leftChamberCoolCount = 0.0f;
+    float rightChamberHotCount = 0.0f;
+    float rightChamberCoolCount = 0.0f;
+    float leftChamberHotCount = 0.0f;
+    float leftChamberCoolCount = 0.0f;
     for (Molecule &mol : molecules)
     {
         if (mol.isHot && mol.isLeft)
         {
-            _leftChamberHotCount++;
+            leftChamberHotCount++;
         }
         else if (mol.isHot && !mol.isLeft)
         {
-            _rightChamberHotCount++;
+            rightChamberHotCount++;
         }
         else if (!mol.isHot && mol.isLeft)
         {
-            _leftChamberCoolCount++;
+            leftChamberCoolCount++;
         }
         else if (!mol.isHot && !mol.isLeft)
         {
-            _rightChamberCoolCount++;
+            rightChamberCoolCount++;
         }
     }
-    rightChamberHotCount = _rightChamberHotCount;
-    rightChamberCoolCount = _rightChamberCoolCount;
-    leftChamberHotCount = _leftChamberHotCount;
-    leftChamberCoolCount = _leftChamberCoolCount;
+    // rightChamberHotCount = _rightChamberHotCount;
+    // rightChamberCoolCount = _rightChamberCoolCount;
+    // leftChamberHotCount = _leftChamberHotCount;
+    // leftChamberCoolCount = _leftChamberCoolCount;
 
     return {
         .leftHot = leftChamberHotCount,

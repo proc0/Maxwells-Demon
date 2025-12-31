@@ -2,11 +2,6 @@
 #include "common.hpp"
 
 void Chamber::Load() {
-
-    containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
-    containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
-    colorChamberLeft = BLUE;
-    colorChamberRight = RED;
     // TODO: needs MOLECULE_RADIUS to be in global header of some kind
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, 12 * 4);
     grid.addArea(walls[0].rect, 0);

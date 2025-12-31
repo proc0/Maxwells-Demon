@@ -33,3 +33,13 @@ namespace Locate {
     float Right(Vector2 point, float offset);
     float Bottom(Vector2 point, float offset);
 };
+
+static inline float factorial(float n) {
+    float f = 1;
+    for (float i = 1; i <= n; ++i)
+        f *= i;
+    return f;
+}
+
+
+

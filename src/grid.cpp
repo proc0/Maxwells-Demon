@@ -33,64 +33,6 @@ void Grid::AddPoint(Vector2 point, short id) {
     cells[cell.x][cell.y].push_back(id);
 }
 
-void Grid::AddArea(Rectangle area, short id) {
-    Vector2 cell = GridPoint(area.x, area.y);
-
-    int widthCells = ceil(area.width / cellSize);
-    int heightCells = ceil(area.height / cellSize);
-
-    for (int x = cell.x; x < cell.x + widthCells; x++) {
-        for (int y = cell.y; y < cell.y + heightCells; y++) {
-            cells[x][y].push_back(id);
-        }
-    }
-}
-
-void Grid::RemoveArea(Rectangle area, short id) {
-    Vector2 position = GridPoint(area.x, area.y);
-
-    int widthCells = ceil(area.width / cellSize);
-    int heightCells = ceil(area.height / cellSize);
-
-    for (int x = position.x; x < position.x + widthCells; x++) {
-        for (int y = position.y; y < position.y + heightCells; y++) {
-            auto &cell = cells[x][y];
-
-            auto newEnd = std::remove(cell.begin(), cell.end(), id);
-            cell.erase(newEnd, cell.end());
-        }
-    }
-}
-
-Cell Grid::ZoneArea(Vector2 point, float radius) const {
-    Vector2 topLeft = GridPoint(Locate::Left(point, radius), Locate::Top(point, radius));
-    Vector2 bottomRight = GridPoint(Locate::Right(point, radius), Locate::Bottom(point, radius));
-
-    Cell zone;
-    std::vector<short> processed;
-    for (short x = topLeft.x; x <= bottomRight.x; ++x) {
-        for (short y = topLeft.y; y <= bottomRight.y; ++y) {
-            const Cell& cell = cells[x][y];
-            for (auto cid : cell) {
-                bool isProcessed = false;
-                for (short procId : processed) {
-                    if (procId == cid) {
-                        isProcessed = true;
-                        break;
-                    }
-                }
-
-                if (!isProcessed) {
-                    zone.push_back(cid);
-                    processed.push_back(cid);
-                }
-            }
-        }
-    }
-
-    return zone;
-}
-
 void Grid::RemovePoint(Vector2 cell, short id) {
     auto gridCell = cells[cell.x][cell.y];
     auto newEnd = std::remove(gridCell.begin(), gridCell.end(), id);
@@ -137,6 +79,64 @@ Cell Grid::ZonePoint(Vector2 point, float radius, short id) {
                 }
 
                 zone.push_back(cid);
+            }
+        }
+    }
+
+    return zone;
+}
+
+void Grid::AddArea(Rectangle area, short id) {
+    Vector2 cell = GridPoint(area.x, area.y);
+
+    int widthCells = ceil(area.width / cellSize);
+    int heightCells = ceil(area.height / cellSize);
+
+    for (int x = cell.x; x < cell.x + widthCells; x++) {
+        for (int y = cell.y; y < cell.y + heightCells; y++) {
+            cells[x][y].push_back(id);
+        }
+    }
+}
+
+void Grid::RemoveArea(Rectangle area, short id) {
+    Vector2 position = GridPoint(area.x, area.y);
+
+    short widthCells = ceil(area.width / cellSize);
+    short heightCells = ceil(area.height / cellSize);
+
+    for (short x = position.x; x < position.x + widthCells; x++) {
+        for (short y = position.y; y < position.y + heightCells; y++) {
+            Cell& cell = cells[x][y];
+
+            auto newEnd = std::remove(cell.begin(), cell.end(), id);
+            cell.erase(newEnd, cell.end());
+        }
+    }
+}
+
+Cell Grid::ZoneArea(Vector2 point, float radius) const {
+    Vector2 topLeft = GridPoint(Locate::Left(point, radius), Locate::Top(point, radius));
+    Vector2 bottomRight = GridPoint(Locate::Right(point, radius), Locate::Bottom(point, radius));
+
+    Cell zone;
+    std::vector<short> processed;
+    for (short x = topLeft.x; x <= bottomRight.x; ++x) {
+        for (short y = topLeft.y; y <= bottomRight.y; ++y) {
+            const Cell& cell = cells[x][y];
+            for (auto cid : cell) {
+                bool isProcessed = false;
+                for (short procId : processed) {
+                    if (procId == cid) {
+                        isProcessed = true;
+                        break;
+                    }
+                }
+
+                if (!isProcessed) {
+                    zone.push_back(cid);
+                    processed.push_back(cid);
+                }
             }
         }
     }

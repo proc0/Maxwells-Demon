@@ -1,23 +1,23 @@
 #include "game.hpp"
 
 
-ThermalCount Game::Update()
+Thermal Game::Update()
 {
     // Resize();
-    ThermalCount thermalCount = gas.Update(chamber);
-    chamber.Update(thermalCount);
-    entropy.Update(thermalCount);
+    Thermal stats = gas.Update(chamber);
+    chamber.Update(stats);
+    entropy.Update(stats);
 
-    return thermalCount;
+    return stats;
 }
 
-void Game::Render(const ThermalCount thermalCount) const {
+void Game::Render(const Thermal stats) const {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
     chamber.Render();
     gas.Render();
-    entropy.Render(thermalCount);
+    entropy.Render(stats);
 
     // DrawFPS(20, 20);
     EndDrawing();
@@ -25,9 +25,9 @@ void Game::Render(const ThermalCount thermalCount) const {
 
 void Game::Load() {
     chamber.Load();
-    ThermalCount thermalCount = gas.Load(chamber);
-    entropy.Load(thermalCount);
-    chamber.Init(thermalCount);
+    Thermal stats = gas.Load(chamber);
+    entropy.Load(stats);
+    chamber.Init(stats);
 }
 
 void Game::Unload() {
@@ -38,8 +38,8 @@ void Game::Unload() {
 void Game::Loop(void *self) {
     Game *client = static_cast<Game *>(self);
 
-    ThermalCount thermalCount = client->Update();
-    client->Render(thermalCount);
+    Thermal stats = client->Update();
+    client->Render(stats);
 }
 
 void Game::Run() {

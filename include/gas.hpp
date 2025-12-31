@@ -42,9 +42,9 @@ public:
     Gas(){};
     ~Gas() = default;
 
-    ThermalCount Load(const Chamber& chamber);
-    ThermalCount Populate(const Chamber& chamber);
-    ThermalCount Update(const Chamber& chamber);
+    Thermal Load(const Chamber& chamber);
+    Thermal Populate(const Chamber& chamber);
+    Thermal Update(const Chamber& chamber);
     Vector2 Spawn(float radius, const Chamber& chamber);
     void Render() const;
 

@@ -2,29 +2,34 @@
 #include "common.hpp"
 
 
-void Entropy::Load(ThermalCount thermal) {
-    
-    totalHotCount = thermal.leftHot + thermal.rightHot;
-    totalCoolCount = thermal.leftCold + thermal.rightCold;
-    float halfHotCount = totalHotCount/2.0f;
-    float halfColdCount = totalCoolCount/2.0f;
-    maxEntropy = calculateBoltzmannEntropy(halfHotCount, totalHotCount - halfHotCount, halfColdCount, totalCoolCount - halfColdCount);
-    entropy = calculateBoltzmannEntropy(thermal.leftHot, thermal.rightHot, thermal.leftCold, thermal.rightCold);
+void Entropy::Load(Thermal stats) {
+    totalHotCount = stats.leftHot + stats.rightHot;
+    totalCoolCount = stats.leftCold + stats.rightCold;
+    float halfHotCount = totalHotCount / 2.0f;
+    float halfColdCount = totalCoolCount / 2.0f;
+    const Thermal maxStats = {
+        .leftHot = halfHotCount,
+        .leftCold = halfColdCount,
+        .rightHot = totalHotCount - halfHotCount,
+        .rightCold = totalCoolCount - halfColdCount,
+    };
+    maxEntropy = calculateBoltzmannEntropy(maxStats);
+    entropy = calculateBoltzmannEntropy(stats);
     completion = entropy / maxEntropy;
 }
 
-void Entropy::Update(ThermalCount thermal) {
-    entropy = calculateBoltzmannEntropy(thermal.leftHot, thermal.rightHot, thermal.leftCold, thermal.rightCold);
+void Entropy::Update(Thermal stats) {
+    entropy = calculateBoltzmannEntropy(stats);
     completion = entropy / maxEntropy;
     entropyBar = entropyBarLength * completion;
     barColor = ColorLerp(GREEN, GRAY, completion);
 }
 
-void Entropy::Render(const ThermalCount thermal) const {
-    const char *leftHotCountText = TextFormat("%.f", thermal.leftHot);
-    const char *leftColdCountText = TextFormat("%.f", thermal.leftCold);
-    const char *rightHotCountText = TextFormat("%.f", thermal.rightHot);
-    const char *rightColdCountText = TextFormat("%.f", thermal.rightCold);
+void Entropy::Render(const Thermal stats) const {
+    const char *leftHotCountText = TextFormat("%.f", stats.leftHot);
+    const char *leftColdCountText = TextFormat("%.f", stats.leftCold);
+    const char *rightHotCountText = TextFormat("%.f", stats.rightHot);
+    const char *rightColdCountText = TextFormat("%.f", stats.rightCold);
 
     DrawText(leftHotCountText, 280, 15, 20, RED);
     DrawText(pipeText, 300, 15, 20, BLACK); 
@@ -48,16 +53,16 @@ void Entropy::Unload() {
 
 }
 
-float Entropy::calculateShannonEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const
+float Entropy::calculateShannonEntropy(const Thermal stats) const
 {
     // Stirling Approx. : n*(N!) ≈ N*lnN − N
     // This has negative results (error approx.) for small numbers
-    float totalCountHot = leftHotCount + rightHotCount;
-    float totalCountCold = leftColdCount + rightColdCount;
-    float p = leftHotCount / totalCountHot;
-    float q = rightHotCount / totalCountHot;
-    float r = leftColdCount / totalCountCold;
-    float t = rightColdCount / totalCountCold;
+    float totalCountHot = stats.leftHot + stats.rightHot;
+    float totalCountCold = stats.leftCold + stats.rightCold;
+    float p = stats.leftHot / totalCountHot;
+    float q = stats.rightHot / totalCountHot;
+    float r = stats.leftCold / totalCountCold;
+    float t = stats.rightCold / totalCountCold;
 
     float leftHotMember = p != 1 && p != 0 ? totalCountHot * (p * log(p) + (1 - p) * log(1 - p)) : 0;
     float leftCoolMember = r != 1 && r != 0 ? totalCountCold * (r * log(r) + (1 - r) * log(1 - r)) : 0;
@@ -70,22 +75,22 @@ float Entropy::calculateShannonEntropy(float leftHotCount, float rightHotCount, 
     return leftEntropy + rightEntropy;
 }
 
-float factorial(const int n)
+float factorial(const float n)
 {
     float f = 1;
-    for (int i = 1; i <= n; ++i)
+    for (float i = 1; i <= n; ++i)
         f *= i;
     return f;
 }
 
-float Entropy::calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const
+float Entropy::calculateBoltzmannEntropy(const Thermal stats) const
 {   // S = k*ln*W
     // W = N1! / N2!*N3!
     // where N1 is total count of molecules, N2, N3 are chamber counts
-    float totalCountHot = leftHotCount + rightHotCount;
-    float totalCountCold = leftColdCount + rightColdCount;
-    float hotEntropy = factorial(totalCountHot) / (factorial(leftHotCount) * factorial(rightHotCount));
-    float coldEntropy = factorial(totalCountCold) / (factorial(leftColdCount) * factorial(rightColdCount));
+    float totalCountHot = stats.leftHot + stats.rightHot;
+    float totalCountCold = stats.leftCold + stats.rightCold;
+    float hotEntropy = factorial(totalCountHot) / (factorial(stats.leftHot) * factorial(stats.rightHot));
+    float coldEntropy = factorial(totalCountCold) / (factorial(stats.leftCold) * factorial(stats.rightCold));
 
     return log(hotEntropy * coldEntropy);
 }

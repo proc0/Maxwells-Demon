@@ -40,7 +40,7 @@ public:
 	~Chamber() = default;
 
     void Load();
-    void Init(ThermalCount);
+    void Init(Thermal);
     bool checkTunneling(Vector2 position, float radius) const;
     bool IsDetected(Vector2 position, float radius) const;
     bool IsLeft(Vector2 position, float radius) const;
@@ -48,7 +48,7 @@ public:
     const Wall& GetWall(short id) const;
 
     void Render() const;
-	void Update(ThermalCount);
-	void UpdateColors(ThermalCount);
+	void Update(Thermal);
+	void UpdateColors(Thermal);
 	void Unload();
 };

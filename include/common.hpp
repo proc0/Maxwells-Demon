@@ -19,13 +19,13 @@
 
 #define EASE_OUT_EXPO(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
 
-typedef struct ThermalCount {
+typedef struct Thermal {
     float leftHot = 0;
     float leftCold = 0;
 
     float rightHot = 0;
     float rightCold = 0;
-} ThermalCount;
+} Thermal;
 
 namespace Locate {
     float Top(Vector2 point, float offset);

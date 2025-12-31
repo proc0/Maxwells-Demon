@@ -19,10 +19,10 @@ public:
 	Entropy(){};
 	~Entropy() = default;
 
-	void Load(ThermalCount);
-	void Update(ThermalCount);
-	void Render(const ThermalCount) const;
+	void Load(Thermal);
+	void Update(Thermal);
+	void Render(const Thermal) const;
 	void Unload();
-    float calculateShannonEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const;
-    float calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const;
+    float calculateShannonEntropy(const Thermal) const;
+    float calculateBoltzmannEntropy(const Thermal) const;
 };

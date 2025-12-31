@@ -2,12 +2,12 @@
 #include "common.hpp"
 #include "raylib.h"
 
-ThermalCount Gas::Load(const Chamber& chamber) {
+Thermal Gas::Load(const Chamber& chamber) {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
     return Populate(chamber);
 }
 
-ThermalCount Gas::Populate(const Chamber& chamber) {
+Thermal Gas::Populate(const Chamber& chamber) {
     int maxMoleculeType = DENSITY/2;
 
     float leftChamberHotCount = 0;
@@ -141,7 +141,7 @@ void Gas::Render() const {
     }
 }
 
-ThermalCount Gas::Update(const Chamber& chamber)
+Thermal Gas::Update(const Chamber& chamber)
 {
     for (Molecule &mol : molecules)
     {

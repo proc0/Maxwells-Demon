@@ -26,9 +26,9 @@ class Game {
         
         void Load();
         static void Loop(void *self);
-        void Render(const ThermalCount) const;
+        void Render(const Thermal) const;
         void Resize();
         void Run();
-        ThermalCount Update();
+        Thermal Update();
         void Unload();
 };

@@ -8,9 +8,9 @@ void Chamber::Load() {
     grid.AddArea(walls[2].rect, 2);
 }
 
-void Chamber::Init(ThermalCount thermal) {
-    totalHotCount = thermal.leftHot + thermal.rightHot;
-    totalCoolCount = thermal.leftCold + thermal.rightCold;
+void Chamber::Init(Thermal stats) {
+    totalHotCount = stats.leftHot + stats.rightHot;
+    totalCoolCount = stats.leftCold + stats.rightCold;
 }
 
 void Chamber::Render() const {
@@ -25,73 +25,61 @@ void Chamber::Render() const {
     }
 }
 
-void Chamber::UpdateColors(ThermalCount thermal) {
-    if(thermal.leftCold == thermal.leftHot) {
+void Chamber::UpdateColors(Thermal stats) {
+    if(stats.leftCold == stats.leftHot) {
         colorChamberLeft = RAYWHITE;
     } else {
-        colorChamberLeft = Fade(thermal.leftCold > thermal.leftHot ? ColorLerp(RAYWHITE, BLUE, thermal.leftCold/totalCoolCount) : ColorLerp(RAYWHITE, RED, thermal.leftHot/totalHotCount), 0.2f);
+        colorChamberLeft = Fade(stats.leftCold > stats.leftHot ? ColorLerp(RAYWHITE, BLUE, stats.leftCold/totalCoolCount) : ColorLerp(RAYWHITE, RED, stats.leftHot/totalHotCount), 0.2f);
     }
 
-    if(thermal.rightCold == thermal.rightHot) {
+    if(stats.rightCold == stats.rightHot) {
         colorChamberRight = RAYWHITE;
     } else {
-        colorChamberRight = Fade(thermal.rightCold > thermal.rightHot ? ColorLerp(RAYWHITE, BLUE, thermal.rightCold/totalCoolCount) : ColorLerp(RAYWHITE, RED, thermal.rightHot/totalHotCount), 0.2f);
+        colorChamberRight = Fade(stats.rightCold > stats.rightHot ? ColorLerp(RAYWHITE, BLUE, stats.rightCold/totalCoolCount) : ColorLerp(RAYWHITE, RED, stats.rightHot/totalHotCount), 0.2f);
     }
 }
 
-void Chamber::Update(ThermalCount thermal) {
-    Wall *wall = &walls[1];
+void Chamber::Update(Thermal stats) {
+    Wall& door = walls[1];
 
-    if (IsKeyReleased(KEY_SPACE))
-    {
+    if (IsKeyReleased(KEY_SPACE)) {
         isDoorClosing = true;
     }
 
-    if (isDoorClosing)
-    {
-
-        if (doorFrame == 0 && wall->rect.y < DOOR_MAX_Y)
-        {
+    if (isDoorClosing) {
+        if (doorFrame == 0 && door.rect.y < DOOR_MAX_Y) {
             doorFrame = DOOR_OPEN_FRAMES;
         }
 
-        if (doorFrame > 0)
-        {
-            float displacement = EASE_OUT_EXPO((1 / (float)doorFrame) * DOOR_OPEN_FRAMES);
-            wall->rect.y += displacement * 10;
-            if (wall->rect.y >= DOOR_MAX_Y)
-            {
-                wall->rect.y = DOOR_MAX_Y;
+        if (doorFrame > 0) {
+            float displacement = EASE_OUT_EXPO((1.0f / doorFrame) * DOOR_OPEN_FRAMES);
+            door.rect.y += displacement * 10;
+            if (door.rect.y >= DOOR_MAX_Y) {
+                door.rect.y = DOOR_MAX_Y;
                 isDoorClosing = false;
             }
-            // addWall(wall);
         }
     }
 
-    if (IsKeyDown(KEY_SPACE))
-    {
+    if (IsKeyDown(KEY_SPACE)) {
         isDoorClosing = false;
 
-        if (doorFrame == 0 && wall->rect.y > DOOR_MIN_Y)
-        {
+        if (doorFrame == 0 && door.rect.y > DOOR_MIN_Y) {
             doorFrame = DOOR_OPEN_FRAMES;
         }
 
-        if (doorFrame > 0)
-        {
-            float displacement = EASE_OUT_EXPO((1 / (float)doorFrame) * DOOR_OPEN_FRAMES);
-            wall->rect.y -= displacement * 10;
-            if (wall->rect.y <= DOOR_MIN_Y)
-            {
-                wall->rect.y = DOOR_MIN_Y;
+        if (doorFrame > 0) {
+            float displacement = EASE_OUT_EXPO((1.0f / doorFrame) * DOOR_OPEN_FRAMES);
+            door.rect.y -= displacement * 10;
+            if (door.rect.y <= DOOR_MIN_Y) {
+                door.rect.y = DOOR_MIN_Y;
             }
-            // removeWall(wall);
 
             doorFrame--;
         }
     }
 
-    UpdateColors(thermal);
+    UpdateColors(stats);
 }
 
 bool Chamber::checkTunneling(Vector2 position, float radius) const

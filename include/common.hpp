@@ -18,14 +18,14 @@
 typedef struct ThermalCount {
     float leftHot = 0;
     float leftCold = 0;
-    
+
     float rightHot = 0;
     float rightCold = 0;
 } ThermalCount;
 
 namespace Locate {
-    float Top(Vector2 position, float offset);
-    float Left(Vector2 position, float offset);
-    float Right(Vector2 position, float offset);
-    float Bottom(Vector2 position, float offset);
+    float Top(Vector2 point, float offset);
+    float Left(Vector2 point, float offset);
+    float Right(Vector2 point, float offset);
+    float Bottom(Vector2 point, float offset);
 };

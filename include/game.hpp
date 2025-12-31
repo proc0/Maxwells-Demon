@@ -19,7 +19,7 @@ class Game {
     Gas gas;
     Chamber chamber;
     Entropy entropy;
-    
+
     public:
         int screenWidth = SCREEN_WIDTH;
         int screenHeight = SCREEN_HEIGHT;
@@ -29,9 +29,9 @@ class Game {
         
         void Load();
         static void Loop(void *self);
-        void Render() const;
+        void Render(const ThermalCount) const;
         void Resize();
         void Run();
         void Unload();
-        void Update();
+        ThermalCount Update();
 };

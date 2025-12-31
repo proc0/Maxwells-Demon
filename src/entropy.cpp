@@ -20,11 +20,11 @@ void Entropy::Update(ThermalCount thermal) {
     barColor = ColorLerp(GREEN, GRAY, completion);
 }
 
-void Entropy::Render(float leftChamberCoolCount, float leftChamberHotCount, float rightChamberCoolCount, float rightChamberHotCount) const {
-    const char *leftHotCountText = TextFormat("%.f", leftChamberHotCount);
-    const char *leftColdCountText = TextFormat("%.f", leftChamberCoolCount);
-    const char *rightHotCountText = TextFormat("%.f", rightChamberHotCount);
-    const char *rightColdCountText = TextFormat("%.f", rightChamberCoolCount);
+void Entropy::Render(const ThermalCount thermal) const {
+    const char *leftHotCountText = TextFormat("%.f", thermal.leftHot);
+    const char *leftColdCountText = TextFormat("%.f", thermal.leftCold);
+    const char *rightHotCountText = TextFormat("%.f", thermal.rightHot);
+    const char *rightColdCountText = TextFormat("%.f", thermal.rightCold);
 
     DrawText(leftHotCountText, 280, 15, 20, RED);
     DrawText(pipeText, 300, 15, 20, BLACK); 

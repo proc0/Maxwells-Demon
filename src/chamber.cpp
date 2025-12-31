@@ -1,6 +1,8 @@
 #include "chamber.hpp"
+#include "common.hpp"
 
 void Chamber::Load() {
+
     containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
     containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
     colorChamberLeft = BLUE;
@@ -12,6 +14,11 @@ void Chamber::Load() {
     grid.addArea(walls[2].rect, 2);
 }
 
+void Chamber::Init(ThermalCount thermal) {
+    totalHotCount = thermal.leftHot + thermal.rightHot;
+    totalCoolCount = thermal.leftCold + thermal.rightCold;
+}
+
 void Chamber::Render() const
 {
 
@@ -21,28 +28,28 @@ void Chamber::Render() const
     DrawRectangleRec(containerLeft, colorChamberLeft);
     DrawRectangleRec(containerRight, colorChamberRight);
 
-    for (const Wall2 &wall : walls)
+    for (const Wall &wall : walls)
     {
         DrawRectangleRec(wall.rect, BLACK);
     }
 }
 
-void Chamber::UpdateColors(float leftChamberCoolCount, float leftChamberHotCount, float rightChamberCoolCount, float rightChamberHotCount, float totalCoolCount, float totalHotCount) {
-    if(leftChamberCoolCount == leftChamberHotCount) {
+void Chamber::UpdateColors(ThermalCount thermal) {
+    if(thermal.leftCold == thermal.leftHot) {
         colorChamberLeft = RAYWHITE;
     } else {
-        colorChamberLeft = Fade(leftChamberCoolCount > leftChamberHotCount ? ColorLerp(RAYWHITE, BLUE, leftChamberCoolCount/totalCoolCount) : ColorLerp(RAYWHITE, RED, leftChamberHotCount/totalHotCount), 0.2f);
+        colorChamberLeft = Fade(thermal.leftCold > thermal.leftHot ? ColorLerp(RAYWHITE, BLUE, thermal.leftCold/totalCoolCount) : ColorLerp(RAYWHITE, RED, thermal.leftHot/totalHotCount), 0.2f);
     }
 
-    if(rightChamberCoolCount == rightChamberHotCount) {
+    if(thermal.rightCold == thermal.rightHot) {
         colorChamberRight = RAYWHITE;
     } else {
-        colorChamberRight = Fade(rightChamberCoolCount > rightChamberHotCount ? ColorLerp(RAYWHITE, BLUE, rightChamberCoolCount/totalCoolCount) : ColorLerp(RAYWHITE, RED, rightChamberHotCount/totalHotCount), 0.2f);
+        colorChamberRight = Fade(thermal.rightCold > thermal.rightHot ? ColorLerp(RAYWHITE, BLUE, thermal.rightCold/totalCoolCount) : ColorLerp(RAYWHITE, RED, thermal.rightHot/totalHotCount), 0.2f);
     }
 }
 
-void Chamber::Update() {
-    Wall2 *wall = &walls[1];
+void Chamber::Update(ThermalCount thermal) {
+    Wall *wall = &walls[1];
 
     if (IsKeyReleased(KEY_SPACE))
     {
@@ -92,6 +99,8 @@ void Chamber::Update() {
             doorFrame--;
         }
     }
+
+    UpdateColors(thermal);
 }
 
 bool Chamber::checkTunneling(Vector2 position, float radius) const
@@ -129,6 +138,10 @@ bool Chamber::checkSensor(Vector2 position, float radius) const
 
 Cell Chamber::GetWalls(Vector2 point, float radius) const {
     return grid.getArea(point, radius);
+}
+
+const Wall& Chamber::GetWall(short id) const {
+    return walls.at(id);
 }
 
 void Chamber::Unload() {

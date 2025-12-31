@@ -12,48 +12,51 @@
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
 
-typedef struct Wall2
+typedef struct Wall
 {
     Rectangle rect;
     int id;
-} Wall2;
+} Wall;
 
 class Chamber {
-    Color colorChamberLeft;
-    Color colorChamberRight;
-	Grid grid;
-    Rectangle containerLeft;
-    Rectangle containerRight;
-
-public:
-    std::array<Wall2, 3> walls = {
-    	Wall2({ 
+    std::array<Wall, 3> walls = {
+    	Wall({ 
     		.rect = Rectangle({633, 200, 15, 150}),
     		.id = 0,
     	}),
-    	Wall2({
+    	Wall({
     		.rect = Rectangle({633, 350, 15, 100}),
     		.id = 1, 
     	}),
-    	Wall2({
+    	Wall({
     		.rect = Rectangle({633, 450, 15, 150}),
     		.id = 2,
     	})
     };
 	Rectangle sensor = Rectangle({610, 300, 60, 200});
+    Color colorChamberLeft;
+    Color colorChamberRight;
+	Grid grid;
+    Rectangle containerLeft;
+    Rectangle containerRight;
+    float totalHotCount = 0;
+    float totalCoolCount = 0;
     int doorFrame = 0;
     bool isDoorClosing = false;
 
+public:
 	Chamber(){};
 	~Chamber() = default;
 
     void Load();
+    void Init(ThermalCount);
     bool checkTunneling(Vector2 position, float radius) const;
     bool checkSensor(Vector2 position, float radius) const;
     Cell GetWalls(Vector2 point, float radius) const;
+    const Wall& GetWall(short id) const;
 
     void Render() const;
-	void Update();
-	void UpdateColors(float leftChamberCoolCount, float leftChamberHotCount, float rightChamberCoolCount, float rightChamberHotCount, float totalCoolCount, float totalHotCount);
+	void Update(ThermalCount);
+	void UpdateColors(ThermalCount);
 	void Unload();
 };

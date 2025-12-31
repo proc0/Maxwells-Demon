@@ -21,7 +21,7 @@ public:
 
 	void Load(ThermalCount);
 	void Update(ThermalCount);
-	void Render(float leftChamberCoolCount, float leftChamberHotCount, float rightChamberCoolCount, float rightChamberHotCount) const;
+	void Render(const ThermalCount) const;
 	void Unload();
     float calculateShannonEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const;
     float calculateBoltzmannEntropy(float leftHotCount, float rightHotCount, float leftColdCount, float rightColdCount) const;

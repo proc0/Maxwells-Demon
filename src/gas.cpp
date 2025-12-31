@@ -288,8 +288,8 @@ void Gas::CheckBounds(Molecule &mol, const Chamber& chamber)
     for (auto cid : wallZone)
     {
         // TODO: make walls private in chamber, expose another method
-        Wall2 wall = chamber.walls[cid];
-        Rectangle wallRect = wall.rect;
+        const Wall& wall = chamber.GetWall(cid);
+        const Rectangle& wallRect = wall.rect;
         if (CheckCollisionCircleRec(mol.position, mol.radius, wallRect))
         {
             if (Locate::Right(mol.position, mol.radius) > wallRect.x && mol.position.x < wallRect.x && mol.velocity.x > 0)

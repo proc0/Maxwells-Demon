@@ -37,8 +37,6 @@ typedef struct Molecule
     bool isHot = false;
     bool isLeft = false;
     bool isCounted = false;
-    //TODO: hook this up to avoid processing molecule more than once in getZone
-    bool isProcessed = false;
 } Molecule;
 
 class Gas

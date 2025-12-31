@@ -1,5 +1,6 @@
 
 #include "grid.hpp"
+#include "raylib.h"
 
 // GRID
 
@@ -271,17 +272,33 @@ Cell Grid::getZone(Vector2 point, float radius, short id)
 
     Cell zone;
 
-    for (int x = topLeft.x; x <= bottomRight.x; ++x)
+    for (short x = topLeft.x; x <= bottomRight.x; ++x)
     {
-        for (int y = topLeft.y; y <= bottomRight.y; ++y)
+        for (short y = topLeft.y; y <= bottomRight.y; ++y)
         {
             Cell cell = cells[x][y];
             for (auto cid : cell)
             {
-                if (id != cid)
-                {
-                    zone.push_back(cid);
+                if (id == cid) continue;
+
+                bool cacheHit = false;
+                for (auto ccid : cache) {
+                    if (ccid == cid) {
+                        cacheHit = true;
+                        break;
+                    }
                 }
+
+                if (cacheHit) continue;
+
+                cache[cacheIndex] = cid;
+                if (cacheIndex > 4) {
+                    cacheIndex = 0;
+                } else {
+                    cacheIndex++;
+                }
+
+                zone.push_back(cid);
             }
         }
     }
@@ -289,17 +306,10 @@ Cell Grid::getZone(Vector2 point, float radius, short id)
     return zone;
 }
 
-// float Locate::Top(const Molecule& m) { return m.position.y - m.radius; }
-float Locate::Top(Vector2 position, float radius) { return position.y - radius; }
-
-// float Locate::Left(const Molecule& m) { return m.position.x - m.radius; }
-float Locate::Left(Vector2 position, float radius) { return position.x - radius; }
-
-// float Locate::Right(const Molecule& m) { return m.position.x + m.radius; }
-float Locate::Right(Vector2 position, float radius) { return position.x + radius; }
-
-// float Locate::Bottom(const Molecule& m) { return m.position.y + m.radius; }
-float Locate::Bottom(Vector2 position, float radius) { return position.y + radius; }
+float Locate::Top(Vector2 point, float offset) { return point.y - offset; }
+float Locate::Left(Vector2 point, float offset) { return point.x - offset; }
+float Locate::Right(Vector2 point, float offset) { return point.x + offset; }
+float Locate::Bottom(Vector2 point, float offset) { return point.y + offset; }
 
 // Cell Grid::getWalls(Molecule *mol)
 // {

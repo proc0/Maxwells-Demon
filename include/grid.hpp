@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <vector>
 #include <algorithm> // IWYU pragma: keep
 #include "common.hpp" // IWYU pragma: keep
@@ -9,10 +10,12 @@ using Cell = std::vector<short>;
 class Grid
 {
     std::vector<std::vector<Cell>> cells;
+    std::array<short, 6> cache;
     // std::vector<std::vector<Cell>> wallCells;
     // Rectangle sensor = Rectangle({610, 300, 60, 200});
-    Vector2 cellCount;
-    float cellSize;
+    Vector2 cellCount = { 10, 10 };
+    float cellSize = 1;
+    short cacheIndex = 0;
     // int doorFrame = 0;
     // bool isDoorClosing = false;
 

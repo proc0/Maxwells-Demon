@@ -3,7 +3,7 @@
 
 void Chamber::Load() {
     // TODO: needs MOLECULE_RADIUS to be in global header of some kind
-    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, 12 * 4);
+    grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
     grid.addArea(walls[0].rect, 0);
     grid.addArea(walls[1].rect, 1);
     grid.addArea(walls[2].rect, 2);

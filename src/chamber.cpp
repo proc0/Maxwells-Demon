@@ -4,9 +4,9 @@
 void Chamber::Load() {
     // TODO: needs MOLECULE_RADIUS to be in global header of some kind
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
-    grid.addArea(walls[0].rect, 0);
-    grid.addArea(walls[1].rect, 1);
-    grid.addArea(walls[2].rect, 2);
+    grid.AddArea(walls[0].rect, 0);
+    grid.AddArea(walls[1].rect, 1);
+    grid.AddArea(walls[2].rect, 2);
 }
 
 void Chamber::Init(ThermalCount thermal) {
@@ -132,7 +132,7 @@ bool Chamber::checkSensor(Vector2 position, float radius) const
 }
 
 Cell Chamber::GetWalls(Vector2 point, float radius) const {
-    return grid.getArea(point, radius);
+    return grid.ZoneArea(point, radius);
 }
 
 const Wall& Chamber::GetWall(short id) const {

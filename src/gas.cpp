@@ -26,7 +26,7 @@ ThermalCount Gas::Load(const Chamber& chamber)
 //         .collided = false,
 //     };
 
-//     grid.addPoint(molecules[0].position, 0);
+//     grid.AddPoint(molecules[0].position, 0);
 
 //     molecules[1] = {
 //         .force = {-10, 5},
@@ -42,7 +42,7 @@ ThermalCount Gas::Load(const Chamber& chamber)
 //         .collided = false,
 //     };
 
-//     grid.addPoint(molecules[1].position, 1);
+//     grid.AddPoint(molecules[1].position, 1);
 // }
 
 ThermalCount Gas::Populate(const Chamber& chamber)
@@ -108,7 +108,7 @@ ThermalCount Gas::Populate(const Chamber& chamber)
             .isHot = isHot
         };
 
-        grid.addPoint(molecules[i].position, i);
+        grid.AddPoint(molecules[i].position, i);
 
 
         if (molecules[i].isHot)
@@ -226,7 +226,7 @@ ThermalCount Gas::Update(const Chamber& chamber)
         CheckBounds(mol, chamber);
         UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
-        mol.cell = grid.update(mol.position, mol.cell, mol.id);
+        mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
     }
 
     float rightChamberHotCount = 0.0f;
@@ -374,7 +374,7 @@ void Gas::CheckBounds(Molecule &mol, const Chamber& chamber)
 
 void Gas::CheckCollision(Molecule &mol)
 {
-    Cell zone = grid.getZone(mol.position, mol.radius, mol.id);
+    Cell zone = grid.ZonePoint(mol.position, mol.radius, mol.id);
 
     for (auto cid : zone)
     {
@@ -399,7 +399,7 @@ void Gas::CollideZone(Molecule &mol)
     if (!mol.collided)
         return;
 
-    Cell zone = grid.getZone(mol.position, mol.radius, mol.id);
+    Cell zone = grid.ZonePoint(mol.position, mol.radius, mol.id);
 
     for (auto cid : zone)
     {

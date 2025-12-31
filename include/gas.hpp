@@ -2,23 +2,19 @@
 
 #include <array>
 
-#include "common.hpp" // IWYU pragma: keep
+#include "common.hpp"
 #include "grid.hpp"
 #include "chamber.hpp"
 
 #define DENSITY 40
 
-// TODO: expose MOLECULE_RAIDUS globally to resize grid accordingly
 #define MAX_SPEED 500.0f
 #define RESTITUTION 0.8f
-#define MOLECULE_RADIUS 12.0f
-#define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
-#define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
+
 #define GRAVITY Vector2(0.0f, 982.0f)
 #define ZERO_VECTOR Vector2(0.0f, 0.0f)
 
-typedef struct Molecule
-{
+typedef struct Molecule {
     Vector2 force{};
     Vector2 origin{};
     Vector2 position{};
@@ -39,8 +35,7 @@ typedef struct Molecule
     bool isCounted = false;
 } Molecule;
 
-class Gas
-{
+class Gas {
     std::array<Molecule, DENSITY> molecules;
     Grid grid;
 

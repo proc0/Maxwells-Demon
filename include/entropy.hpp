@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.hpp" // IWYU pragma: keep
+#include "common.hpp"
 
 class Entropy {
 	Color barColor = GRAY;

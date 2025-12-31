@@ -11,10 +11,10 @@ using Cell = std::vector<short>;
 
 class Grid {
     std::vector<std::vector<Cell>> cells;
+    Vector2 dimension = { 10, 10 };
     std::array<short, MAX_CACHE_SIZE+1> cache;
-    Vector2 cellCount = { 10, 10 };
-    float cellSize = 1;
-    short cacheIndex = 0;
+    float unit = 1;
+    short cursor = 0;
 
 public:
     Grid(){};

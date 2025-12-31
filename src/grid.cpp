@@ -2,11 +2,11 @@
 #include "grid.hpp"
 
 void Grid::Load(short width, short height, float unit) {
-    cellSize = unit;
-    short columns = static_cast<short>(ceil(static_cast<float>(width) / cellSize));
-    short rows = static_cast<short>(ceil(static_cast<float>(height) / cellSize));
+    this->unit = unit;
+    short columns = static_cast<short>(ceil(static_cast<float>(width) / unit));
+    short rows = static_cast<short>(ceil(static_cast<float>(height) / unit));
 
-    cellCount = Vector2(columns, rows);
+    dimension = Vector2(columns, rows);
     cells.resize(columns, std::vector<Cell>(rows));
 
     for (short x = 0; x < columns; ++x) {
@@ -17,13 +17,13 @@ void Grid::Load(short width, short height, float unit) {
 }
 
 Vector2 Grid::GridPoint(float _x, float _y) const {
-    short x = floor(static_cast<short>((_x - CONTAINER_X) / cellSize));
-    short y = floor(static_cast<short>((_y - CONTAINER_Y) / cellSize));
+    short x = floor(static_cast<short>((_x - CONTAINER_X) / unit));
+    short y = floor(static_cast<short>((_y - CONTAINER_Y) / unit));
     // clamp grid bounds
     if (x < 0) x = 0;
     if (y < 0) y = 0;
-    if (x >= cellCount.x) x = cellCount.x - 1;
-    if (y >= cellCount.y) y = cellCount.y - 1;
+    if (x >= dimension.x) x = dimension.x - 1;
+    if (y >= dimension.y) y = dimension.y - 1;
 
     return Vector2(x, y);
 }
@@ -71,11 +71,11 @@ Cell Grid::ZonePoint(Vector2 point, float radius, short id) {
 
                 if (cacheHit) continue;
 
-                cache[cacheIndex] = cid;
-                if (cacheIndex > MAX_CACHE_SIZE) {
-                    cacheIndex = 0;
+                cache[cursor] = cid;
+                if (cursor > MAX_CACHE_SIZE) {
+                    cursor = 0;
                 } else {
-                    cacheIndex++;
+                    cursor++;
                 }
 
                 zone.push_back(cid);
@@ -87,26 +87,26 @@ Cell Grid::ZonePoint(Vector2 point, float radius, short id) {
 }
 
 void Grid::AddArea(Rectangle area, short id) {
-    Vector2 cell = GridPoint(area.x, area.y);
+    Vector2 initCell = GridPoint(area.x, area.y);
 
-    int widthCells = ceil(area.width / cellSize);
-    int heightCells = ceil(area.height / cellSize);
+    short widthCells = ceil(area.width / unit);
+    short heightCells = ceil(area.height / unit);
 
-    for (int x = cell.x; x < cell.x + widthCells; x++) {
-        for (int y = cell.y; y < cell.y + heightCells; y++) {
+    for (short x = initCell.x; x < initCell.x + widthCells; x++) {
+        for (short y = initCell.y; y < initCell.y + heightCells; y++) {
             cells[x][y].push_back(id);
         }
     }
 }
 
 void Grid::RemoveArea(Rectangle area, short id) {
-    Vector2 position = GridPoint(area.x, area.y);
+    Vector2 initCell = GridPoint(area.x, area.y);
 
-    short widthCells = ceil(area.width / cellSize);
-    short heightCells = ceil(area.height / cellSize);
+    short widthCells = ceil(area.width / unit);
+    short heightCells = ceil(area.height / unit);
 
-    for (short x = position.x; x < position.x + widthCells; x++) {
-        for (short y = position.y; y < position.y + heightCells; y++) {
+    for (short x = initCell.x; x < initCell.x + widthCells; x++) {
+        for (short y = initCell.y; y < initCell.y + heightCells; y++) {
             Cell& cell = cells[x][y];
 
             auto newEnd = std::remove(cell.begin(), cell.end(), id);
@@ -126,8 +126,8 @@ Cell Grid::ZoneArea(Vector2 point, float radius) const {
             const Cell& cell = cells[x][y];
             for (auto cid : cell) {
                 bool isProcessed = false;
-                for (short procId : processed) {
-                    if (procId == cid) {
+                for (short pid : processed) {
+                    if (pid == cid) {
                         isProcessed = true;
                         break;
                     }

@@ -13,17 +13,14 @@ void Chamber::Init(ThermalCount thermal) {
     totalCoolCount = thermal.leftCold + thermal.rightCold;
 }
 
-void Chamber::Render() const
-{
-
+void Chamber::Render() const {
     DrawRectangle(CONTAINER_BORDER_X, CONTAINER_BORDER_Y, CONTAINER_BORDER_WIDTH, CONTAINER_BORDER_HEIGHT, BLACK);
     DrawRectangle(CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH, CONTAINER_HEIGHT, RAYWHITE);
 
-    DrawRectangleRec(containerLeft, colorChamberLeft);
-    DrawRectangleRec(containerRight, colorChamberRight);
+    DrawRectangleRec(chamberLeft, colorChamberLeft);
+    DrawRectangleRec(chamberRight, colorChamberRight);
 
-    for (const Wall &wall : walls)
-    {
+    for (const Wall& wall : walls) {
         DrawRectangleRec(wall.rect, BLACK);
     }
 }
@@ -112,22 +109,22 @@ bool Chamber::checkTunneling(Vector2 position, float radius) const
     return isIntersect;
 };
 
-bool Chamber::checkSensor(Vector2 position, float radius) const
-{
-
+bool Chamber::IsDetected(Vector2 position, float radius) const {
     int widthCells = ceil(sensor.width / 10);
     int heightCells = ceil(sensor.height / 10);
 
     bool isDetected = false;
-    for (int x = sensor.x; x < sensor.x + widthCells; x++)
-    {
-        for (int y = sensor.y; y < sensor.y + heightCells; y++)
-        {
+    for (int x = sensor.x; x < sensor.x + widthCells; x++) {
+        for (int y = sensor.y; y < sensor.y + heightCells; y++) {
             isDetected = CheckCollisionCircleRec(position, radius, sensor);
         }
     }
 
     return isDetected;
+}
+
+bool Chamber::IsLeft(Vector2 position, float radius) const {
+    return CheckCollisionCircleRec(position, radius, chamberLeft);
 }
 
 Cell Chamber::GetWalls(Vector2 point, float radius) const {

@@ -32,7 +32,6 @@ typedef struct Molecule {
     bool collided = false;
     bool isHot = false;
     bool isLeft = false;
-    bool isCounted = false;
 } Molecule;
 
 class Gas {
@@ -40,9 +39,6 @@ class Gas {
     Grid grid;
 
 public:
-    int screenWidth = 1280;
-    int screenHeight = 720;
-
     Gas(){};
     ~Gas() = default;
 

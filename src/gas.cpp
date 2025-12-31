@@ -2,56 +2,12 @@
 #include "common.hpp"
 #include "raylib.h"
 
-ThermalCount Gas::Load(const Chamber& chamber)
-{
-
+ThermalCount Gas::Load(const Chamber& chamber) {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
     return Populate(chamber);
 }
 
-// void Gas::Test()
-// {
-
-//     molecules[0] = {
-//         .force = {10, 0},
-//         .origin = {0.0f, 0.0f},
-//         .position = {CONTAINER_X + 250, CONTAINER_Y + 200},
-//         .velocity = {0.0f, 0.0f},
-//         .acceleration = {0.0f, 0.0f},
-//         .color = RED,
-//         .mass = 1.0f,
-//         .radius = MOLECULE_RADIUS,
-//         .id = 0,
-//         .active = true,
-//         .collided = false,
-//     };
-
-//     grid.AddPoint(molecules[0].position, 0);
-
-//     molecules[1] = {
-//         .force = {-10, 5},
-//         .origin = {0.0f, 0.0f},
-//         .position = {CONTAINER_X + 450, CONTAINER_Y + 150},
-//         .velocity = {0.0f, 0.0f},
-//         .acceleration = {0.0f, 0.0f},
-//         .color = BLUE,
-//         .mass = 1.0f,
-//         .radius = MOLECULE_RADIUS,
-//         .id = 1,
-//         .active = true,
-//         .collided = false,
-//     };
-
-//     grid.AddPoint(molecules[1].position, 1);
-// }
-
-ThermalCount Gas::Populate(const Chamber& chamber)
-{
-    // grid.addWalls(chamber.walls);
-    // grid.addWall(chamber.walls[0]);
-    // grid.addWall(chamber.walls[1]);
-    // grid.addWall(chamber.walls[2]);
-
+ThermalCount Gas::Populate(const Chamber& chamber) {
     int maxMoleculeType = DENSITY/2;
 
     float leftChamberHotCount = 0;
@@ -114,27 +70,27 @@ ThermalCount Gas::Populate(const Chamber& chamber)
         if (molecules[i].isHot)
         {
             totalHotCount++;
-            if (molecules[i].position.x > static_cast<float>(screenWidth)/2.0f)
-            {
-                rightChamberHotCount++;
-            }
-            else
+            if (chamber.IsLeft(molecules[i].position, molecules[i].radius))
             {
                 molecules[i].isLeft = true;
                 leftChamberHotCount++;
+            }
+            else
+            {
+                rightChamberHotCount++;
             }
         }
         else
         {
             totalCoolCount++;
-            if (molecules[i].position.x > static_cast<float>(screenWidth)/2.0f)
-            {
-                rightChamberCoolCount++;
-            }
-            else
+            if (chamber.IsLeft(molecules[i].position, molecules[i].radius))
             {
                 molecules[i].isLeft = true;
                 leftChamberCoolCount++;
+            }
+            else
+            {
+                rightChamberCoolCount++;
             }
         }
     }
@@ -145,11 +101,6 @@ ThermalCount Gas::Populate(const Chamber& chamber)
         .rightHot = rightChamberHotCount,
         .rightCold = rightChamberCoolCount,
     };
-    // float halfHotCount = totalHotCount/2.0f;
-    // float halfColdCount = totalCoolCount/2.0f;
-    // maxEntropy = calculateBoltzmannEntropy(halfHotCount, totalHotCount - halfHotCount, halfColdCount, totalCoolCount - halfColdCount);
-    // entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
-    // completion = entropy / maxEntropy;
 }
 
 Vector2 Gas::Spawn(float radius, const Chamber& chamber)
@@ -181,42 +132,13 @@ Vector2 Gas::Spawn(float radius, const Chamber& chamber)
     return position;
 }
 
-void Gas::Render() const
-{
-
-
-    // grid.Render();
-
-    for (const Molecule &mol : molecules)
-    {
+void Gas::Render() const {
+    for (const Molecule &mol : molecules) {
         if (!mol.active)
             continue;
 
         DrawCircle(mol.position.x, mol.position.y, mol.radius, mol.color);
     }
-
-    // const char *leftHotCountText = TextFormat("%.f", leftChamberHotCount);
-    // const char *leftColdCountText = TextFormat("%.f", leftChamberCoolCount);
-    // const char *rightHotCountText = TextFormat("%.f", rightChamberHotCount);
-    // const char *rightColdCountText = TextFormat("%.f", rightChamberCoolCount);
-
-    // DrawText(leftHotCountText, 280, 15, 20, RED);
-    // DrawText(pipeText, 300, 15, 20, BLACK); 
-    // DrawText(leftColdCountText, 308, 15, 20, BLUE);
-
-    // DrawText(rightHotCountText, 948, 15, 20, RED);
-    // DrawText(pipeText, 970, 15, 20, BLACK);
-    // DrawText(rightColdCountText, 980, 15, 20, BLUE);
-
-    // const char *entText = TextFormat("Entropy %.2f", entropy);
-    // const char *maxEntText = TextFormat("Max %.2f", maxEntropy);
-    // DrawText(entText, 430, 15, 20, BLACK);
-    // DrawText(maxEntText, 730, 15, 20, BLACK);
-
-    // DrawRectangle(entropyBarX-1, entropyBarY-1, entropyBarLength+2, 7, BLACK);
-    // DrawRectangle(entropyBarX, entropyBarY, entropyBarLength, 5, RAYWHITE);
-    // DrawRectangle(entropyBarX, entropyBarY, entropyBar, 5, barColor);
-
 }
 
 ThermalCount Gas::Update(const Chamber& chamber)
@@ -252,10 +174,6 @@ ThermalCount Gas::Update(const Chamber& chamber)
             rightChamberCoolCount++;
         }
     }
-    // rightChamberHotCount = _rightChamberHotCount;
-    // rightChamberCoolCount = _rightChamberCoolCount;
-    // leftChamberHotCount = _leftChamberHotCount;
-    // leftChamberCoolCount = _leftChamberCoolCount;
 
     return {
         .leftHot = leftChamberHotCount,
@@ -263,26 +181,6 @@ ThermalCount Gas::Update(const Chamber& chamber)
         .rightHot = rightChamberHotCount,
         .rightCold = rightChamberCoolCount,
     };
-
-    // grid.updateWalls();
-
-    // entropy = calculateBoltzmannEntropy(leftChamberHotCount, rightChamberHotCount, leftChamberCoolCount, rightChamberCoolCount);
-    // completion = entropy / maxEntropy;
-    // entropyBar = entropyBarLength * completion;
-    // barColor = ColorLerp(GREEN, GRAY, completion);
-
-    // if(leftChamberCoolCount == leftChamberHotCount) {
-    //     colorChamberLeft = RAYWHITE;
-    // } else {
-    //     colorChamberLeft = Fade(leftChamberCoolCount > leftChamberHotCount ? ColorLerp(RAYWHITE, BLUE, leftChamberCoolCount/totalCoolCount) : ColorLerp(RAYWHITE, RED, leftChamberHotCount/totalHotCount), 0.2f);
-    // }
-
-    // if(rightChamberCoolCount == rightChamberHotCount) {
-    //     colorChamberRight = RAYWHITE;
-    // } else {
-    //     colorChamberRight = Fade(rightChamberCoolCount > rightChamberHotCount ? ColorLerp(RAYWHITE, BLUE, rightChamberCoolCount/totalCoolCount) : ColorLerp(RAYWHITE, RED, rightChamberHotCount/totalHotCount), 0.2f);
-    // }
-
 }
 
 void Gas::Unload()
@@ -296,7 +194,6 @@ void Gas::CheckBounds(Molecule &mol, const Chamber& chamber)
 
     for (auto cid : wallZone)
     {
-        // TODO: make walls private in chamber, expose another method
         const Wall& wall = chamber.GetWall(cid);
         const Rectangle& wallRect = wall.rect;
         if (CheckCollisionCircleRec(mol.position, mol.radius, wallRect))
@@ -358,17 +255,17 @@ void Gas::CheckBounds(Molecule &mol, const Chamber& chamber)
         mol.force.y *= -mol.restitution;
     }
 
-    if (chamber.checkSensor(mol.position, mol.radius))
+    if (chamber.IsDetected(mol.position, mol.radius))
     {
-        mol.isCounted = true;
-        if (mol.position.x > static_cast<float>(screenWidth)/2.0f)
-        {
-            mol.isLeft = false;
-        }
-        else
-        {
-            mol.isLeft = true;
-        }
+        mol.isLeft = chamber.IsLeft(mol.position, mol.radius);
+        // if (mol.position.x > static_cast<float>(screenWidth)/2.0f)
+        // {
+        //     mol.isLeft = false;
+        // }
+        // else
+        // {
+        //     mol.isLeft = true;
+        // }
     }
 }
 
@@ -505,15 +402,3 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force)
     mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y) / 10.0f));
 }
 
-
-// float Locate::Top(const Molecule& m) { return m.position.y - m.radius; }
-// float Locate::Top(Vector2 position, float radius) { return position.y - radius; }
-
-// float Locate::Left(const Molecule& m) { return m.position.x - m.radius; }
-// float Locate::Left(Vector2 position, float radius) { return position.x - radius; }
-
-// float Locate::Right(const Molecule& m) { return m.position.x + m.radius; }
-// float Locate::Right(Vector2 position, float radius) { return position.x + radius; }
-
-// float Locate::Bottom(const Molecule& m) { return m.position.y + m.radius; }
-// float Locate::Bottom(Vector2 position, float radius) { return position.y + radius; }

@@ -26,8 +26,8 @@ class Chamber {
     };
 	Grid grid;
 	Rectangle sensor = Rectangle({610, 300, 60, 200});
-    Rectangle containerLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
-    Rectangle containerRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
+    Rectangle chamberLeft = Rectangle({ CONTAINER_X, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
+    Rectangle chamberRight = Rectangle({ CONTAINER_X + CONTAINER_WIDTH/2.0f, CONTAINER_Y, CONTAINER_WIDTH/2.0f, CONTAINER_HEIGHT });
     Color colorChamberLeft = BLUE;
     Color colorChamberRight = BLUE;
     float totalHotCount = 0;
@@ -42,7 +42,8 @@ public:
     void Load();
     void Init(ThermalCount);
     bool checkTunneling(Vector2 position, float radius) const;
-    bool checkSensor(Vector2 position, float radius) const;
+    bool IsDetected(Vector2 position, float radius) const;
+    bool IsLeft(Vector2 position, float radius) const;
     Cell GetWalls(Vector2 point, float radius) const;
     const Wall& GetWall(short id) const;
 

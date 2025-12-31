@@ -11,8 +11,7 @@ ThermalCount Game::Update()
     return thermalCount;
 }
 
-void Game::Render(const ThermalCount thermalCount) const
-{
+void Game::Render(const ThermalCount thermalCount) const {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
@@ -24,33 +23,26 @@ void Game::Render(const ThermalCount thermalCount) const
     EndDrawing();
 }
 
-void Game::Load()
-{
-    gas.screenWidth = screenWidth;
-    gas.screenHeight = screenHeight;
-    
+void Game::Load() {
     chamber.Load();
     ThermalCount thermalCount = gas.Load(chamber);
     entropy.Load(thermalCount);
     chamber.Init(thermalCount);
 }
 
-void Game::Unload()
-{
+void Game::Unload() {
     gas.Unload();
     chamber.Unload();
 }
 
-void Game::Loop(void *self)
-{
+void Game::Loop(void *self) {
     Game *client = static_cast<Game *>(self);
 
     ThermalCount thermalCount = client->Update();
     client->Render(thermalCount);
 }
 
-void Game::Run()
-{
+void Game::Run() {
 #ifdef __EMSCRIPTEN__
     // no target FPS for browser performance
     emscripten_set_main_loop_arg(Loop, this, 0, 1);

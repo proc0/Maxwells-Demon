@@ -1,6 +1,7 @@
 #include "gas.hpp"
 #include "common.hpp"
 #include "raylib.h"
+#include "raymath.h"
 
 Thermal Gas::Load(const Chamber& chamber) {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
@@ -8,7 +9,6 @@ Thermal Gas::Load(const Chamber& chamber) {
 }
 
 Thermal Gas::Populate(const Chamber& chamber) {
-    int maxMoleculeType = DENSITY/2;
 
     float leftChamberHotCount = 0;
     float leftChamberCoolCount = 0;
@@ -16,45 +16,37 @@ Thermal Gas::Populate(const Chamber& chamber) {
     float rightChamberCoolCount = 0;
     float totalHotCount = 0;
     float totalCoolCount = 0;
+    int maxThermalCount = MAX_DENSITY/2;
 
-    for (short i = 0; i < DENSITY; i++)
+    for (short i = 0; i < MAX_DENSITY; i++)
     {
-        if (molecules[i].active)
-        {
-            continue;
-        }
-
-        Vector2 vel = {
-            float(GetRandomValue(-100, 100)), 
-            float(GetRandomValue(-100, 100))
-        };
+        if (molecules[i].active) continue;
 
         bool isHot = GetRandomValue(0, 1) == 1;
-        if(isHot && totalHotCount > maxMoleculeType) {
+        if(isHot && totalHotCount > maxThermalCount) {
             isHot = false;
-        } else if (!isHot && totalCoolCount > maxMoleculeType) {
+        } else if (!isHot && totalCoolCount > maxThermalCount) {
             isHot = true;
         }
 
         Color color1 = isHot ? BEIGE : DARKBLUE;
         Color color2 = isHot ? RED : BLUE;
 
-        float randNegX = float(GetRandomValue(-250, -150));
-        float randNegY = float(GetRandomValue(-250, -150));
-        float randPosX = float(GetRandomValue(150, 20));
-        float randPosY = float(GetRandomValue(150, 250));
+        float randNegX = float(GetRandomValue(-300, -200));
+        float randPosX = float(GetRandomValue(200, 300));
+        float randNegY = float(GetRandomValue(-300, -200));
+        float randPosY = float(GetRandomValue(200, 300));
         Vector2 randForce = Vector2(GetRandomValue(0, 1) == 1 ? randNegX : randPosX, GetRandomValue(0, 1) == 1 ? randNegY : randPosY);
+        
         molecules[i] = {
-            // .force = { GetRandomValue(0, 1) == 1 ? float(GetRandomValue(-500, 0)) : float(GetRandomValue(500, 0)), GRAVITY },
             .force = isHot ? randForce : ZERO_VECTOR,
             .origin = ZERO_VECTOR,
             .position = Spawn(MOLECULE_RADIUS, chamber),
-            // .velocity = vel,
             .velocity = ZERO_VECTOR,
             .acceleration = ZERO_VECTOR,
             .color1 = color1,
             .color2 = color2,
-            .color = ColorLerp(color1, color2, fabsf(vel.x) + fabsf(vel.y)),
+            .color = color1,
             .mass = 2.0f,
             .radius = MOLECULE_RADIUS,
             .restitution = isHot ? 1.0f : RESTITUTION,
@@ -66,30 +58,20 @@ Thermal Gas::Populate(const Chamber& chamber) {
 
         grid.AddPoint(molecules[i].position, i);
 
-
-        if (molecules[i].isHot)
-        {
+        if (molecules[i].isHot) {
             totalHotCount++;
-            if (chamber.IsLeft(molecules[i].position, molecules[i].radius))
-            {
+            if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
                 leftChamberHotCount++;
-            }
-            else
-            {
+            } else {
                 rightChamberHotCount++;
             }
-        }
-        else
-        {
+        } else {
             totalCoolCount++;
-            if (chamber.IsLeft(molecules[i].position, molecules[i].radius))
-            {
+            if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
                 leftChamberCoolCount++;
-            }
-            else
-            {
+            } else {
                 rightChamberCoolCount++;
             }
         }
@@ -101,6 +83,18 @@ Thermal Gas::Populate(const Chamber& chamber) {
         .rightHot = rightChamberHotCount,
         .rightCold = rightChamberCoolCount,
     };
+}
+
+void Gas::ThermalCount(const Molecule& mol, Thermal& stats) const {
+    if (mol.isHot && mol.isLeft) {
+        stats.leftHot++;
+    } else if (mol.isHot && !mol.isLeft) {
+        stats.rightHot++;
+    } else if (!mol.isHot && mol.isLeft) {
+        stats.leftCold++;
+    } else if (!mol.isHot && !mol.isLeft) {
+        stats.rightCold++;
+    }
 }
 
 Vector2 Gas::Spawn(float radius, const Chamber& chamber)
@@ -146,15 +140,11 @@ Thermal Gas::Update(const Chamber& chamber)
     for (Molecule &mol : molecules)
     {
         CheckBounds(mol, chamber);
-        // UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
         mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
     }
 
-    float rightChamberHotCount = 0.0f;
-    float rightChamberCoolCount = 0.0f;
-    float leftChamberHotCount = 0.0f;
-    float leftChamberCoolCount = 0.0f;
+    Thermal stats = {0};
 
     for (Molecule &mol : molecules)
     {
@@ -162,26 +152,12 @@ Thermal Gas::Update(const Chamber& chamber)
         UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
         mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
-
-        if (mol.isHot && mol.isLeft) {
-            leftChamberHotCount++;
-        } else if (mol.isHot && !mol.isLeft) {
-            rightChamberHotCount++;
-        } else if (!mol.isHot && mol.isLeft) {
-            leftChamberCoolCount++;
-        } else if (!mol.isHot && !mol.isLeft) {
-            rightChamberCoolCount++;
-        }
+        ThermalCount(mol, stats);
     }
 
     grid.CacheClear();
 
-    return {
-        .leftHot = leftChamberHotCount,
-        .leftCold = leftChamberCoolCount,
-        .rightHot = rightChamberHotCount,
-        .rightCold = rightChamberCoolCount,
-    };
+    return stats;
 }
 
 void Gas::Unload()
@@ -294,6 +270,16 @@ void Gas::Collide(Molecule &m1, Molecule *m2) {
 
     m1.velocity = Vector2Add(normalVectorVelocity1, tangentVectorVelocity1);
     m2->velocity = Vector2Add(normalVectorVelocity2, tangentVectorVelocity2);
+
+    // affect molecular force
+    Vector2 signedNormal = Vector2(unitNormal.x > 0 ? 1 : -1, unitNormal.y > 0 ? 1 : -1);
+    if(m1.isHot) {
+        m1.force *= signedNormal;
+    }
+
+    if(m2->isHot) {
+        m2->force *= signedNormal;
+    }
 
     m1.collided = false;
     m2->collided = false;

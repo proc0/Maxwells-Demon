@@ -6,7 +6,7 @@
 #include "grid.hpp"
 #include "chamber.hpp"
 
-#define DENSITY 40
+#define MAX_DENSITY 40
 
 #define MAX_SPEED 400.0f
 #define RESTITUTION 0.8f
@@ -35,7 +35,7 @@ typedef struct Molecule {
 } Molecule;
 
 class Gas {
-    std::array<Molecule, DENSITY> molecules;
+    std::array<Molecule, MAX_DENSITY> molecules;
     Grid grid;
 
 public:
@@ -54,6 +54,7 @@ public:
     void CollideZone(Molecule &mol);
     void Collide(Molecule &m1, Molecule *m2);
     void Repulse(Molecule &m1, Molecule *m2);
-    
+    void ThermalCount(const Molecule &mol, Thermal& stats) const;
+
     void Unload();
 };

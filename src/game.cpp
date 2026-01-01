@@ -1,45 +1,44 @@
 #include "game.hpp"
 
-
-Thermal Game::Update()
-{
-    // Resize();
-    Thermal stats = gas.Update(chamber);
-    chamber.Update(stats);
-    entropy.Update(stats);
-
-    return stats;
+void Game::Load() {
+    chamber.Load();
+    Thermal stats = gas.Load(chamber);
+    State state = {
+        .stats = stats
+    };
+    entropy.Load(state);
+    chamber.Init(state);
 }
 
-void Game::Render(const Thermal stats) const {
+State Game::Update() {
+    // Resize();
+    Thermal stats = gas.Update(chamber);
+    State state = {
+        .stats = stats
+    };
+    chamber.Update(state);
+    entropy.Update(state);
+
+    return state;
+}
+
+void Game::Render(const State state) const {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
     chamber.Render();
     gas.Render();
-    entropy.Render(stats);
+    entropy.Render(state);
 
     // DrawFPS(20, 20);
     EndDrawing();
 }
 
-void Game::Load() {
-    chamber.Load();
-    Thermal stats = gas.Load(chamber);
-    entropy.Load(stats);
-    chamber.Init(stats);
-}
-
-void Game::Unload() {
-    gas.Unload();
-    chamber.Unload();
-}
-
 void Game::Loop(void *self) {
     Game *client = static_cast<Game *>(self);
 
-    Thermal stats = client->Update();
-    client->Render(stats);
+    State state = client->Update();
+    client->Render(state);
 }
 
 void Game::Run() {
@@ -53,6 +52,12 @@ void Game::Run() {
         Loop(this);
     }
 #endif
+}
+
+void Game::Unload() {
+    gas.Unload();
+    entropy.Unload();
+    chamber.Unload();
 }
 
 // #if __EMSCRIPTEN__

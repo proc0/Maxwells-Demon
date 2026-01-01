@@ -12,10 +12,13 @@
 #define BAR_BORDER_Y BAR_Y-1
 
 class Entropy {
+    Thermal cache;
     const char *colon = ":";
 	Color barColor = GRAY;
     float totalHot = 0;
     float totalCold = 0;
+    float totalHotFact = 0;
+    float totalColdFact = 0;
     float percent = 0.0f;
     float current = 0.0f;
     float maximum = 0.0f;
@@ -25,9 +28,9 @@ public:
 	Entropy(){};
 	~Entropy() = default;
 
-	void Load(Thermal);
-	void Update(Thermal);
-	void Render(const Thermal) const;
+	void Load(State);
+	void Update(State);
+	void Render(const State) const;
 	void Unload();
     float calculateShannonEntropy(const Thermal) const;
     float calculateBoltzmannEntropy(const Thermal) const;

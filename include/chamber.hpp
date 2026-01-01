@@ -1,19 +1,15 @@
 #pragma once
 
 #include <array>
-// #include <vector>
-// #include <raylib.h>
-// #include <raymath.h>
 
-#include "common.hpp" // IWYU pragma: keep
+#include "common.hpp" 
 #include "grid.hpp"
 
 #define DOOR_MIN_Y 250.0f
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
 
-typedef struct Wall
-{
+typedef struct Wall {
     Rectangle rect;
     int id;
 } Wall;
@@ -40,7 +36,7 @@ public:
 	~Chamber() = default;
 
     void Load();
-    void Init(Thermal);
+    void Init(State);
     bool checkTunneling(Vector2 position, float radius) const;
     bool IsDetected(Vector2 position, float radius) const;
     bool IsLeft(Vector2 position, float radius) const;
@@ -48,7 +44,7 @@ public:
     const Wall& GetWall(short id) const;
 
     void Render() const;
-	void Update(Thermal);
+	void Update(State);
 	void UpdateColors(Thermal);
 	void Unload();
 };

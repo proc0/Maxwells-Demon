@@ -27,6 +27,10 @@ typedef struct Thermal {
     float rightCold = 0;
 } Thermal;
 
+typedef struct State {
+    Thermal stats;
+} State;
+
 namespace Locate {
     float Top(Vector2 point, float offset);
     float Left(Vector2 point, float offset);
@@ -40,6 +44,3 @@ static inline float factorial(float n) {
         f *= i;
     return f;
 }
-
-
-

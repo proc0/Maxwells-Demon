@@ -8,7 +8,8 @@ void Chamber::Load() {
     grid.AddArea(walls[2].rect, 2);
 }
 
-void Chamber::Init(Thermal stats) {
+void Chamber::Init(State state) {
+    Thermal& stats = state.stats;
     totalHotCount = stats.leftHot + stats.rightHot;
     totalCoolCount = stats.leftCold + stats.rightCold;
 }
@@ -39,7 +40,8 @@ void Chamber::UpdateColors(Thermal stats) {
     }
 }
 
-void Chamber::Update(Thermal stats) {
+void Chamber::Update(State state) {
+    Thermal& stats = state.stats;
     Wall& door = walls[1];
 
     if (IsKeyReleased(KEY_SPACE)) {

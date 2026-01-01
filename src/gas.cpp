@@ -55,7 +55,7 @@ Thermal Gas::Populate(const Chamber& chamber) {
             .color1 = color1,
             .color2 = color2,
             .color = ColorLerp(color1, color2, fabsf(vel.x) + fabsf(vel.y)),
-            .mass = 1.0f,
+            .mass = 2.0f,
             .radius = MOLECULE_RADIUS,
             .restitution = isHot ? 1.0f : RESTITUTION,
             .id = i,
@@ -146,36 +146,35 @@ Thermal Gas::Update(const Chamber& chamber)
     for (Molecule &mol : molecules)
     {
         CheckBounds(mol, chamber);
-        UpdateMovement(mol, ZERO_VECTOR);
+        // UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);
         mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
     }
 
-    grid.CacheClear();
-    
     float rightChamberHotCount = 0.0f;
     float rightChamberCoolCount = 0.0f;
     float leftChamberHotCount = 0.0f;
     float leftChamberCoolCount = 0.0f;
+
     for (Molecule &mol : molecules)
     {
-        if (mol.isHot && mol.isLeft)
-        {
+        CheckBounds(mol, chamber);
+        UpdateMovement(mol, ZERO_VECTOR);
+        CollideZone(mol);
+        mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
+
+        if (mol.isHot && mol.isLeft) {
             leftChamberHotCount++;
-        }
-        else if (mol.isHot && !mol.isLeft)
-        {
+        } else if (mol.isHot && !mol.isLeft) {
             rightChamberHotCount++;
-        }
-        else if (!mol.isHot && mol.isLeft)
-        {
+        } else if (!mol.isHot && mol.isLeft) {
             leftChamberCoolCount++;
-        }
-        else if (!mol.isHot && !mol.isLeft)
-        {
+        } else if (!mol.isHot && !mol.isLeft) {
             rightChamberCoolCount++;
         }
     }
+
+    grid.CacheClear();
 
     return {
         .leftHot = leftChamberHotCount,
@@ -337,23 +336,19 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
     mol.velocity = Vector2Add(halfStepVelocity, nextAcceleration * (deltaTime / 2));
 
     // speed limit
-    if (mol.velocity.x > MAX_SPEED)
-    {
+    if (mol.velocity.x > MAX_SPEED) {
         mol.velocity.x = MAX_SPEED;
     }
 
-    if (mol.velocity.x < -MAX_SPEED)
-    {
+    if (mol.velocity.x < -MAX_SPEED) {
         mol.velocity.x = -MAX_SPEED;
     }
 
-    if (mol.velocity.y > MAX_SPEED)
-    {
+    if (mol.velocity.y > MAX_SPEED) {
         mol.velocity.y = MAX_SPEED;
     }
 
-    if (mol.velocity.y < -MAX_SPEED)
-    {
+    if (mol.velocity.y < -MAX_SPEED) {
         mol.velocity.y = -MAX_SPEED;
     }
 

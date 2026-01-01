@@ -8,7 +8,7 @@
 
 #define DENSITY 40
 
-#define MAX_SPEED 500.0f
+#define MAX_SPEED 400.0f
 #define RESTITUTION 0.8f
 
 #define GRAVITY Vector2(0.0f, 982.0f)

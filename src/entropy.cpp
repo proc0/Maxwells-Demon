@@ -1,5 +1,4 @@
 #include "entropy.hpp"
-#include "common.hpp"
 
 void Entropy::Load(State state) {
     Thermal& stats = state.stats;

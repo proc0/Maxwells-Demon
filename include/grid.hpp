@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <vector>
 #include <algorithm> // IWYU pragma: keep
 #include "common.hpp" // IWYU pragma: keep

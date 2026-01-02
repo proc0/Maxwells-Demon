@@ -1,5 +1,4 @@
 #include "chamber.hpp"
-#include "common.hpp"
 
 void Chamber::Load() {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
@@ -52,12 +51,11 @@ void Chamber::Update(State state) {
 
     if (isDoorClosing) {
         if (doorFrame == 0 && door.rect.y < DOOR_MAX_Y) {
-            doorFrame = DOOR_OPEN_FRAMES;
+            doorFrame = EASE_OUT_MAX_FRAMES;
         }
 
         if (doorFrame > 0) {
-            float displacement = EASE_OUT_EXPO((1.0f / doorFrame) * DOOR_OPEN_FRAMES);
-            door.rect.y += displacement * 10;
+            door.rect.y += EASE_OUT_FRAMES[doorFrame] * 10;
             if (door.rect.y >= DOOR_MAX_Y) {
                 door.rect.y = DOOR_MAX_Y;
                 isDoorClosing = false;
@@ -69,12 +67,11 @@ void Chamber::Update(State state) {
         isDoorClosing = false;
 
         if (doorFrame == 0 && door.rect.y > DOOR_MIN_Y) {
-            doorFrame = DOOR_OPEN_FRAMES;
+            doorFrame = EASE_OUT_MAX_FRAMES;
         }
 
         if (doorFrame > 0) {
-            float displacement = EASE_OUT_EXPO((1.0f / doorFrame) * DOOR_OPEN_FRAMES);
-            door.rect.y -= displacement * 10;
+            door.rect.y -= EASE_OUT_FRAMES[doorFrame] * 10;
             if (door.rect.y <= DOOR_MIN_Y) {
                 door.rect.y = DOOR_MIN_Y;
             }

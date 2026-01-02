@@ -1,7 +1,4 @@
 #include "gas.hpp"
-#include "common.hpp"
-#include "raylib.h"
-#include "raymath.h"
 
 Thermal Gas::Load(const Chamber& chamber) {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
@@ -271,7 +268,7 @@ void Gas::Collide(Molecule &m1, Molecule *m2) {
     m1.velocity = Vector2Add(normalVectorVelocity1, tangentVectorVelocity1);
     m2->velocity = Vector2Add(normalVectorVelocity2, tangentVectorVelocity2);
 
-    // affect molecular force
+    // reverse force for hot molecules according to impact normal
     Vector2 signedNormal = Vector2(unitNormal.x > 0 ? 1 : -1, unitNormal.y > 0 ? 1 : -1);
     if(m1.isHot) {
         m1.force *= signedNormal;
@@ -340,6 +337,6 @@ void Gas::UpdateMovement(Molecule &mol, Vector2 force) {
 
     // color update
     Vector2 normalVel = Vector2Normalize(newVelocity);
-    mol.color = ColorLerp(mol.color1, mol.color2, EASE_OUT_EXPO((normalVel.x + normalVel.y) / 10.0f));
+    mol.color = ColorLerp(mol.color1, mol.color2, INVERSE_EXPONENTIAL((normalVel.x + normalVel.y) / 10.0f));
 }
 

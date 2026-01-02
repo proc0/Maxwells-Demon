@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <raylib.h>
 #include <raymath.h>
 
@@ -17,7 +18,28 @@
 #define CONTAINER_RIGHT (CONTAINER_X + CONTAINER_WIDTH - 3)
 #define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_HEIGHT - 3)
 
-#define EASE_OUT_EXPO(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
+#define INVERSE_EXPONENTIAL(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
+
+#define EASE_OUT_MAX_FRAMES 59
+#define EASE_OUT_EXPONENTIAL(frame) INVERSE_EXPONENTIAL((1.0f / (frame)) * EASE_OUT_MAX_FRAMES)
+
+constexpr std::array<short, EASE_OUT_MAX_FRAMES+1> generate_ease_out_frames() {
+    std::array<short, EASE_OUT_MAX_FRAMES+1> frames{};
+    for (short i = EASE_OUT_MAX_FRAMES; i > 0; --i) {
+        frames[i] = EASE_OUT_EXPONENTIAL(i);
+    }
+    return frames;
+}
+
+constexpr const auto EASE_OUT_FRAMES = generate_ease_out_frames();
+
+static inline float factorial(float n) {
+    float f = 1;
+    for (float i = 1; i <= n; ++i) { 
+        f *= i;
+    }
+    return f;
+}
 
 typedef struct Thermal {
     float leftHot = 0;
@@ -37,10 +59,3 @@ namespace Locate {
     float Right(Vector2 point, float offset);
     float Bottom(Vector2 point, float offset);
 };
-
-static inline float factorial(float n) {
-    float f = 1;
-    for (float i = 1; i <= n; ++i)
-        f *= i;
-    return f;
-}

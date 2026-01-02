@@ -1,4 +1,5 @@
 #include "entropy.hpp"
+#include "raylib.h"
 
 void Entropy::Load(State state) {
     Thermal& stats = state.stats;
@@ -22,7 +23,7 @@ void Entropy::Load(State state) {
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
-    barColor = ColorLerp(GREEN, GRAY, percent);
+    barColor = ColorLerp(LIME, DARKGRAY, percent);
 }
 
 void Entropy::Update(State state) {
@@ -36,7 +37,7 @@ void Entropy::Update(State state) {
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
-    barColor = ColorLerp(GREEN, GRAY, percent);
+    barColor = ColorLerp(LIME, DARKGRAY, percent);
 }
 
 void Entropy::Render(const State state) const {

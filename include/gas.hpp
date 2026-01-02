@@ -4,7 +4,7 @@
 #include "grid.hpp"
 #include "chamber.hpp"
 
-#define MAX_DENSITY 40
+#define MAX_DENSITY 15
 
 #define MAX_SPEED 400.0f
 #define RESTITUTION 0.8f

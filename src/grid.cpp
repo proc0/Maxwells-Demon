@@ -61,22 +61,22 @@ Cell Grid::ZonePoint(Vector2 point, float radius, short id) {
             for (auto cid : cell) {
                 if (id == cid) continue;
 
-                bool cacheHit = false;
-                for (auto ccid : cache) {
-                    if (ccid == cid) {
-                        cacheHit = true;
-                        break;
-                    }
-                }
+                // bool cacheHit = false;
+                // for (auto ccid : cache) {
+                //     if (ccid == cid) {
+                //         cacheHit = true;
+                //         break;
+                //     }
+                // }
 
-                if (cacheHit) continue;
+                // if (cacheHit) continue;
 
-                cache[cursor] = cid;
-                if (cursor > MAX_CACHE_SIZE) {
-                    cursor = 0;
-                } else {
-                    cursor++;
-                }
+                // cache[cursor] = cid;
+                // if (cursor > MAX_CACHE_SIZE) {
+                //     cursor = 0;
+                // } else {
+                //     cursor++;
+                // }
 
                 zone.push_back(cid);
             }
@@ -144,6 +144,6 @@ Cell Grid::ZoneArea(Vector2 point, float radius) const {
     return zone;
 }
 
-void Grid::CacheClear() {
-    cache.fill(0);
-}
+// void Grid::CacheClear() {
+//     cache.fill(0);
+// }

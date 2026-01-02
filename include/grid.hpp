@@ -4,13 +4,13 @@
 #include <algorithm> // IWYU pragma: keep
 #include "common.hpp" // IWYU pragma: keep
 
-#define MAX_CACHE_SIZE 9
+// #define MAX_CACHE_SIZE 4
 
 using Cell = std::vector<short>;
 
 class Grid {
     std::vector<std::vector<Cell>> cells;
-    std::array<short, MAX_CACHE_SIZE+1> cache;
+    // std::array<short, MAX_CACHE_SIZE+1> cache;
     Vector2 dimension = { 10, 10 };
     float unit = 1;
     short cursor = 0;
@@ -30,5 +30,5 @@ public:
     void RemoveArea(Rectangle area, short id);
     Cell ZoneArea(Vector2 point, float radius) const;
 
-    void CacheClear();
+    // void CacheClear();
 };

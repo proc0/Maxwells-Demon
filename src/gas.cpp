@@ -152,7 +152,7 @@ Thermal Gas::Update(const Chamber& chamber)
         ThermalCount(mol, stats);
     }
 
-    grid.CacheClear();
+    // grid.CacheClear();
 
     return stats;
 }

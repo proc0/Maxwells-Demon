@@ -3,9 +3,11 @@
 
 void Chamber::Load() {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
-    grid.AddArea(walls[0].rect, 0);
-    grid.AddArea(walls[1].rect, 1);
-    grid.AddArea(walls[2].rect, 2);
+    for (short i = 0; auto& wall : walls) {
+        grid.AddArea(wall.rect, i);
+        i++;
+    }
+
 }
 
 void Chamber::Init(State state) {

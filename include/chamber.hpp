@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <ranges>
+#include <span>
 
 #include "common.hpp" 
 #include "grid.hpp"

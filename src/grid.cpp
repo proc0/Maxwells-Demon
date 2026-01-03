@@ -34,7 +34,7 @@ void Grid::AddPoint(Vector2 point, short id) {
 }
 
 void Grid::RemovePoint(Vector2 cell, short id) {
-    auto gridCell = cells[cell.x][cell.y];
+    auto& gridCell = cells[cell.x][cell.y];
     auto newEnd = std::remove(gridCell.begin(), gridCell.end(), id);
     gridCell.erase(newEnd, gridCell.end());
 }
@@ -47,7 +47,7 @@ Vector2 Grid::UpdatePoint(Vector2 point, Vector2 cell, short id) {
         return newCell;
     }
 
-    return Vector2(0, 0);
+    return newCell;
 }
 
 Cell Grid::ZonePoint(Vector2 point, float radius, short id) {

@@ -59,3 +59,8 @@ namespace Locate {
     float Right(Vector2 point, float offset);
     float Bottom(Vector2 point, float offset);
 };
+
+typedef struct UIEvent {
+    bool reset;
+} UIEvent;
+

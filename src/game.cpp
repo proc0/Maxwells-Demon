@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "raylib.h"
 
 void Game::Load() {
     chamber.Load();
@@ -8,10 +9,15 @@ void Game::Load() {
     };
     entropy.Load(state);
     chamber.Init(state);
+    display.Load();
 }
 
 State Game::Update() {
     // Resize();
+    UIEvent event = display.Update();
+    if (event.reset) {
+        TraceLog(LOG_INFO, "RESET");
+    }
     Thermal stats = gas.Update(chamber);
     State state = {
         .stats = stats
@@ -29,6 +35,7 @@ void Game::Render(const State state) const {
     chamber.Render();
     gas.Render();
     entropy.Render(state);
+    display.Render();
 
     // DrawFPS(20, 20);
     EndDrawing();
@@ -58,6 +65,7 @@ void Game::Unload() {
     gas.Unload();
     entropy.Unload();
     chamber.Unload();
+    display.Unload();
 }
 
 // #if __EMSCRIPTEN__

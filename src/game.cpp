@@ -15,35 +15,36 @@ void Game::Load(short density) {
 Memo Game::Update() {
     // Resize();
     UIEvent event = display.Update();
-    // if (event.reset) {
-    //     Load(25);
-    //     return {
-    //         .stats = {0},
-    //     };
-    // }
 
     if (event.reset) {
-        if (state != PAUSE) {
-            state = PAUSE;
+        Load(25);
+        return {
+            .stats = {0},
+        };
+    }
+
+    if (event.pause) {
+        if (state != State::PAUSE) {
+            state = State::PAUSE;
         } else {
-            state = PLAY;
+            state = State::PLAY;
         }
     }
 
-    if (state == PAUSE) {
+    if (state == State::PAUSE) {
         return {
             .stats = {0},
         };
     }
 
     Thermal stats = gas.Update(chamber);
-    Memo state = {
+    Memo memo = {
         .stats = stats
     };
-    chamber.Update(state);
-    entropy.Update(state);
+    chamber.Update(memo);
+    entropy.Update(memo);
 
-    return state;
+    return memo;
 }
 
 void Game::Render(const Memo& memo) const {
@@ -63,6 +64,7 @@ void Game::Loop(void *self) {
     Game *client = static_cast<Game *>(self);
 
     Memo memo = client->Update();
+
     client->Render(memo);
 }
 

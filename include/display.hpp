@@ -3,8 +3,10 @@
 #include "common.hpp" // IWYU pragma: keep
 
 class Display {
-	Rectangle resetButton = Rectangle({ 600, 600, 150, 50 }); 
+	Rectangle resetButton = Rectangle({ 400, 650, 100, 30 }); 
+	Rectangle pauseButton = Rectangle({ 700, 650, 100, 30 }); 
 	const char* resetText = "Reset";
+	const char* pauseText = "Pause";
 
 public:
 	Display(){};

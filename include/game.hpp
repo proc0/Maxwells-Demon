@@ -23,7 +23,7 @@ class Game {
         PLAY,
         PAUSE,
     };
-    State state = PLAY;
+    State state = State::PLAY;
 
     public:
         int screenWidth = SCREEN_WIDTH;

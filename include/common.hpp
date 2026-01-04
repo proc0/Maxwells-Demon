@@ -62,5 +62,6 @@ namespace Locate {
 
 typedef struct UIEvent {
     bool reset;
+    bool pause;
 } UIEvent;
 

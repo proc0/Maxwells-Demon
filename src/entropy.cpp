@@ -1,8 +1,8 @@
 #include "entropy.hpp"
 #include "raylib.h"
 
-void Entropy::Load(State state) {
-    Thermal& stats = state.stats;
+void Entropy::Load(const Memo& memo) {
+    const Thermal& stats = memo.stats;
     cache = stats;
     totalHot = stats.leftHot + stats.rightHot;
     totalCold = stats.leftCold + stats.rightCold;
@@ -26,22 +26,22 @@ void Entropy::Load(State state) {
     barColor = ColorLerp(LIME, DARKGRAY, percent);
 }
 
-void Entropy::Update(State state) {
-    if ( cache.leftHot == state.stats.leftHot && 
-        cache.leftCold == state.stats.leftCold && 
-        cache.rightHot == state.stats.rightHot && 
-        cache.rightCold == state.stats.rightCold
+void Entropy::Update(const Memo& memo) {
+    if ( cache.leftHot == memo.stats.leftHot && 
+        cache.leftCold == memo.stats.leftCold && 
+        cache.rightHot == memo.stats.rightHot && 
+        cache.rightCold == memo.stats.rightCold
     ) { return; }
 
-    cache = state.stats;
+    cache = memo.stats;
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
     barColor = ColorLerp(LIME, DARKGRAY, percent);
 }
 
-void Entropy::Render(const State state) const {
-    const Thermal& stats = state.stats;
+void Entropy::Render(const Memo& memo) const {
+    const Thermal& stats = memo.stats;
     const char *leftHot = TextFormat("%.f", stats.leftHot);
     const char *leftCold = TextFormat("%.f", stats.leftCold);
     const char *rightHot = TextFormat("%.f", stats.rightHot);

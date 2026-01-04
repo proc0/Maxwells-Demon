@@ -4,7 +4,7 @@
 #include "grid.hpp"
 #include "chamber.hpp"
 
-#define MAX_DENSITY 15
+#define MAX_DENSITY 30
 
 #define MAX_SPEED 400.0f
 #define RESTITUTION 0.8f
@@ -33,15 +33,15 @@ typedef struct Molecule {
 } Molecule;
 
 class Gas {
-    std::array<Molecule, MAX_DENSITY> molecules;
+    std::array<Molecule, MAX_DENSITY+1> molecules;
     Grid grid;
 
 public:
     Gas(){};
     ~Gas() = default;
 
-    Thermal Load(const Chamber& chamber);
-    Thermal Populate(const Chamber& chamber);
+    Thermal Load(const Chamber& chamber, short density);
+    Thermal Populate(const Chamber& chamber, short density);
     Thermal Update(const Chamber& chamber);
     Vector2 Spawn(float radius, const Chamber& chamber);
     void Render() const;

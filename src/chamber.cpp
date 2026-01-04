@@ -9,8 +9,8 @@ void Chamber::Load() {
 
 }
 
-void Chamber::Init(State state) {
-    Thermal& stats = state.stats;
+void Chamber::Init(const Memo& memo) {
+    const Thermal& stats = memo.stats;
     totalHotCount = stats.leftHot + stats.rightHot;
     totalCoolCount = stats.leftCold + stats.rightCold;
 }
@@ -41,8 +41,8 @@ void Chamber::UpdateColors(Thermal stats) {
     }
 }
 
-void Chamber::Update(State state) {
-    Thermal& stats = state.stats;
+void Chamber::Update(const Memo& memo) {
+    const Thermal& stats = memo.stats;
     Wall& door = walls[1];
 
     if (IsKeyReleased(KEY_SPACE)) {

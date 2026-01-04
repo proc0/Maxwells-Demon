@@ -1,29 +1,29 @@
 #include "gas.hpp"
 
-Thermal Gas::Load(const Chamber& chamber) {
+Thermal Gas::Load(const Chamber& chamber, short density) {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
-    return Populate(chamber);
+    return Populate(chamber, density);
 }
 
-Thermal Gas::Populate(const Chamber& chamber) {
+Thermal Gas::Populate(const Chamber& chamber, short density) {
 
     float leftChamberHotCount = 0;
     float leftChamberCoolCount = 0;
     float rightChamberHotCount = 0;
     float rightChamberCoolCount = 0;
     float totalHotCount = 0;
-    float totalCoolCount = 0;
-    int maxThermalCount = MAX_DENSITY/2;
+    // float totalCoolCount = 0;
+    short densityCount = density < MAX_DENSITY ? density : MAX_DENSITY;
+    short maxHotCount = densityCount/2;
 
-    for (short i = 0; i < MAX_DENSITY; i++)
-    {
-        if (molecules[i].active) continue;
+    for (Molecule& mol : molecules) {
+        mol.active = false;
+    }
 
-        bool isHot = GetRandomValue(0, 1) == 1;
-        if(isHot && totalHotCount > maxThermalCount) {
+    for (short i = 0; i < densityCount; i++) {
+        bool isHot = true;
+        if(totalHotCount > maxHotCount) {
             isHot = false;
-        } else if (!isHot && totalCoolCount > maxThermalCount) {
-            isHot = true;
         }
 
         Color color1 = isHot ? BEIGE : DARKBLUE;
@@ -64,7 +64,7 @@ Thermal Gas::Populate(const Chamber& chamber) {
                 rightChamberHotCount++;
             }
         } else {
-            totalCoolCount++;
+            // totalCoolCount++;
             if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
                 leftChamberCoolCount++;
@@ -136,6 +136,8 @@ Thermal Gas::Update(const Chamber& chamber)
 {
     for (Molecule &mol : molecules)
     {
+        if (!mol.active) continue;
+
         CheckBounds(mol, chamber);
         CollideZone(mol);
         mol.cell = grid.UpdatePoint(mol.position, mol.cell, mol.id);
@@ -145,6 +147,8 @@ Thermal Gas::Update(const Chamber& chamber)
 
     for (Molecule &mol : molecules)
     {
+        if (!mol.active) continue;
+        
         CheckBounds(mol, chamber);
         UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);

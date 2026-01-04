@@ -18,7 +18,13 @@ class Game {
     Chamber chamber;
     Entropy entropy;
     Display display;
-    
+
+    enum State {
+        PLAY,
+        PAUSE,
+    };
+    State state = PLAY;
+
     public:
         int screenWidth = SCREEN_WIDTH;
         int screenHeight = SCREEN_HEIGHT;
@@ -26,11 +32,11 @@ class Game {
         Game(){};
         ~Game() = default;
         
-        void Load();
+        void Load(short density);
         static void Loop(void *self);
-        void Render(const State) const;
+        void Render(const Memo&) const;
         void Resize();
         void Run();
-        State Update();
+        Memo Update();
         void Unload();
 };

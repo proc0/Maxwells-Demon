@@ -28,9 +28,9 @@ public:
 	Entropy(){};
 	~Entropy() = default;
 
-	void Load(State);
-	void Update(State);
-	void Render(const State) const;
+	void Load(const Memo&);
+	void Update(const Memo&);
+	void Render(const Memo&) const;
 	void Unload();
     float calculateShannonEntropy(const Thermal) const;
     float calculateBoltzmannEntropy(const Thermal) const;

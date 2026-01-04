@@ -14,7 +14,7 @@ int main(void){
     InitWindow(client.screenWidth, client.screenHeight, PROJECT_NAME);
     InitAudioDevice();
     
-    client.Load();
+    client.Load(7);
     client.Run();
     client.Unload();
 

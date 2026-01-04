@@ -1,25 +1,43 @@
 #include "game.hpp"
 #include "raylib.h"
 
-void Game::Load() {
+void Game::Load(short density) {
     chamber.Load();
-    Thermal stats = gas.Load(chamber);
-    State state = {
+    Thermal stats = gas.Load(chamber, density);
+    Memo memo = {
         .stats = stats
     };
-    entropy.Load(state);
-    chamber.Init(state);
+    entropy.Load(memo);
+    chamber.Init(memo);
     display.Load();
 }
 
-State Game::Update() {
+Memo Game::Update() {
     // Resize();
     UIEvent event = display.Update();
+    // if (event.reset) {
+    //     Load(25);
+    //     return {
+    //         .stats = {0},
+    //     };
+    // }
+
     if (event.reset) {
-        TraceLog(LOG_INFO, "RESET");
+        if (state != PAUSE) {
+            state = PAUSE;
+        } else {
+            state = PLAY;
+        }
     }
+
+    if (state == PAUSE) {
+        return {
+            .stats = {0},
+        };
+    }
+
     Thermal stats = gas.Update(chamber);
-    State state = {
+    Memo state = {
         .stats = stats
     };
     chamber.Update(state);
@@ -28,13 +46,13 @@ State Game::Update() {
     return state;
 }
 
-void Game::Render(const State state) const {
+void Game::Render(const Memo& memo) const {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
     chamber.Render();
     gas.Render();
-    entropy.Render(state);
+    entropy.Render(memo);
     display.Render();
 
     // DrawFPS(20, 20);
@@ -44,8 +62,8 @@ void Game::Render(const State state) const {
 void Game::Loop(void *self) {
     Game *client = static_cast<Game *>(self);
 
-    State state = client->Update();
-    client->Render(state);
+    Memo memo = client->Update();
+    client->Render(memo);
 }
 
 void Game::Run() {

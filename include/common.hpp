@@ -49,9 +49,9 @@ typedef struct Thermal {
     float rightCold = 0;
 } Thermal;
 
-typedef struct State {
+typedef struct Memo {
     Thermal stats;
-} State;
+} Memo;
 
 namespace Locate {
     float Top(Vector2 point, float offset);

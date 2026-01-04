@@ -1,16 +1,18 @@
 #include "gas.hpp"
+#include "raylib.h"
 
 Thermal Gas::Load(const Chamber& chamber, short density) {
+    this->density = density;
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
-    return Populate(chamber, density);
+    return Populate(chamber);
 }
 
-Thermal Gas::Populate(const Chamber& chamber, short density) {
+Thermal Gas::Populate(const Chamber& chamber) {
 
-    float leftChamberHotCount = 0;
-    float leftChamberCoolCount = 0;
-    float rightChamberHotCount = 0;
-    float rightChamberCoolCount = 0;
+    // float leftChamberHotCount = 0;
+    // float leftChamberCoolCount = 0;
+    // float rightChamberHotCount = 0;
+    // float rightChamberCoolCount = 0;
     float totalHotCount = 0;
     // float totalCoolCount = 0;
     short densityCount = density < MAX_DENSITY ? density : MAX_DENSITY;
@@ -59,27 +61,87 @@ Thermal Gas::Populate(const Chamber& chamber, short density) {
             totalHotCount++;
             if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
-                leftChamberHotCount++;
+                // leftChamberHotCount++;
             } else {
-                rightChamberHotCount++;
+                // rightChamberHotCount++;
+                molecules[i].isLeft = false;
             }
         } else {
             // totalCoolCount++;
             if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
-                leftChamberCoolCount++;
+                // leftChamberCoolCount++;
             } else {
-                rightChamberCoolCount++;
+                // rightChamberCoolCount++;
+                molecules[i].isLeft = false;
             }
         }
     }
 
-    return {
-        .leftHot = leftChamberHotCount,
-        .leftCold = leftChamberCoolCount,
-        .rightHot = rightChamberHotCount,
-        .rightCold = rightChamberCoolCount,
+    return Update(chamber);
+    // return {
+    //     .leftHot = leftChamberHotCount,
+    //     .leftCold = leftChamberCoolCount,
+    //     .rightHot = rightChamberHotCount,
+    //     .rightCold = rightChamberCoolCount,
+    // };
+}
+
+void Gas::Add(const Chamber& chamber) {
+    short newDensity = density + 1;
+    if (newDensity >= MAX_DENSITY) return;
+
+    density = newDensity;
+
+    bool isHot = GetRandomValue(0, 1) == 1;
+    bool isLeft = GetRandomValue(0, 1) == 1;
+
+    Color color1 = isHot ? BEIGE : DARKBLUE;
+    Color color2 = isHot ? RED : BLUE;
+
+    float randNegX = float(GetRandomValue(-300, -200));
+    float randPosX = float(GetRandomValue(200, 300));
+    float randNegY = float(GetRandomValue(-300, -200));
+    float randPosY = float(GetRandomValue(200, 300));
+    Vector2 randForce = Vector2(GetRandomValue(0, 1) == 1 ? randNegX : randPosX, GetRandomValue(0, 1) == 1 ? randNegY : randPosY);
+    
+    molecules[density] = {
+        .force = isHot ? randForce : ZERO_VECTOR,
+        .origin = ZERO_VECTOR,
+        .position = Spawn(MOLECULE_RADIUS, chamber),
+        .velocity = ZERO_VECTOR,
+        .acceleration = ZERO_VECTOR,
+        .color1 = color1,
+        .color2 = color2,
+        .color = color1,
+        .mass = 2.0f,
+        .radius = MOLECULE_RADIUS,
+        .restitution = isHot ? 1.0f : RESTITUTION,
+        .id = density,
+        .active = true,
+        .collided = false,
+        .isHot = isHot,
+        .isLeft = isLeft,
     };
+
+    grid.AddPoint(molecules[density].position, density);
+}
+
+void Gas::Sub(const Chamber& chamber) {
+    if (density < 1) return;
+
+    molecules[density].active = false;
+    density--;
+}
+
+Thermal Gas::Count() const {
+    Thermal stats = {0};
+    for (const Molecule &mol : molecules) {
+        if (!mol.active) continue;
+        ThermalCount(mol, stats);
+    }
+
+    return stats;
 }
 
 void Gas::ThermalCount(const Molecule& mol, Thermal& stats) const {
@@ -148,7 +210,7 @@ Thermal Gas::Update(const Chamber& chamber)
     for (Molecule &mol : molecules)
     {
         if (!mol.active) continue;
-        
+
         CheckBounds(mol, chamber);
         UpdateMovement(mol, ZERO_VECTOR);
         CollideZone(mol);

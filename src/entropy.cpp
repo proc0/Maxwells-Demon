@@ -23,7 +23,7 @@ void Entropy::Load(const Memo& memo) {
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
-    barColor = ColorLerp(LIME, DARKGRAY, percent);
+    barColor = ColorLerp(LIME, YELLOW, percent);
 }
 
 void Entropy::Update(const Memo& memo) {
@@ -37,7 +37,7 @@ void Entropy::Update(const Memo& memo) {
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
-    barColor = ColorLerp(LIME, DARKGRAY, percent);
+    barColor = ColorLerp(LIME, YELLOW, percent);
 }
 
 void Entropy::Render(const Memo& memo) const {

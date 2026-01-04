@@ -44,7 +44,6 @@ static inline float factorial(float n) {
 typedef struct Thermal {
     float leftHot = 0;
     float leftCold = 0;
-
     float rightHot = 0;
     float rightCold = 0;
 } Thermal;
@@ -63,5 +62,7 @@ namespace Locate {
 typedef struct UIEvent {
     bool reset;
     bool pause;
+    bool add;
+    bool sub;
 } UIEvent;
 

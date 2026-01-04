@@ -35,15 +35,19 @@ typedef struct Molecule {
 class Gas {
     std::array<Molecule, MAX_DENSITY+1> molecules;
     Grid grid;
+    short density;
 
 public:
     Gas(){};
     ~Gas() = default;
 
     Thermal Load(const Chamber& chamber, short density);
-    Thermal Populate(const Chamber& chamber, short density);
+    Thermal Populate(const Chamber& chamber);
     Thermal Update(const Chamber& chamber);
     Vector2 Spawn(float radius, const Chamber& chamber);
+    Thermal Count() const;
+    void Add(const Chamber& chamber);
+    void Sub(const Chamber& chamber);
     void Render() const;
 
     void CheckBounds(Molecule &mol, const Chamber& chamber);

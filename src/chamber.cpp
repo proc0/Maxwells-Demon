@@ -93,6 +93,22 @@ bool Chamber::checkTunneling(Vector2 position, float radius) const
             isIntersect = true;
             break;
         }
+
+        if (position.x + radius > CONTAINER_WIDTH + CONTAINER_X) {
+            isIntersect = true;
+            break;
+        } else if (position.x - radius < CONTAINER_X) {
+            isIntersect = true;
+            break;
+        }
+
+        if (position.y + radius > CONTAINER_HEIGHT + CONTAINER_Y) {
+            isIntersect = true;
+            break;
+        } else if (position.y - radius < CONTAINER_Y) {
+            isIntersect = true;
+            break;
+        }
     }
 
     return isIntersect;

@@ -37,6 +37,32 @@ Memo Game::Update() {
         }
     }
 
+    if (event.add) {
+        gas.Add(chamber);
+        Thermal stats = gas.Count();
+        Memo memo = {
+            .stats = stats
+        };
+        chamber.Init(memo);
+        chamber.UpdateColors(memo.stats);
+        entropy.Load(memo);
+        cache = memo;
+        return cache;
+    }
+
+    if (event.sub) {
+        gas.Sub(chamber);
+        Thermal stats = gas.Count();
+        Memo memo = {
+            .stats = stats
+        };
+        chamber.Init(memo);
+        chamber.UpdateColors(memo.stats);
+        entropy.Load(memo);
+        cache = memo;
+        return cache;
+    }
+
     if (state == State::PAUSE) {
         return cache;
     }

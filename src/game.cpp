@@ -18,23 +18,27 @@ Memo Game::Update() {
 
     if (event.reset) {
         Load(25);
-        return {
-            .stats = {0},
-        };
+        return cache;
     }
 
     if (event.pause) {
-        if (state != State::PAUSE) {
+        if (state == State::PLAY) {
             state = State::PAUSE;
+            Thermal stats = gas.Update(chamber);
+            Memo memo = {
+                .stats = stats
+            };
+            chamber.Update(memo);
+            entropy.Update(memo);
+            cache = memo;
+            return cache;
         } else {
             state = State::PLAY;
         }
     }
 
     if (state == State::PAUSE) {
-        return {
-            .stats = {0},
-        };
+        return cache;
     }
 
     Thermal stats = gas.Update(chamber);

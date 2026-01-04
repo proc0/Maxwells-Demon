@@ -24,7 +24,8 @@ class Game {
         PAUSE,
     };
     State state = State::PLAY;
-
+    Memo cache = { .stats = {0} };
+    
     public:
         int screenWidth = SCREEN_WIDTH;
         int screenHeight = SCREEN_HEIGHT;

@@ -6,20 +6,21 @@ void Display::Load() {
 }
 
 UIEvent Display::Update() {
-	UIEvent event = { .reset = false };
+	UIEvent event = {0};
 
 	if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 		const Vector2& mousePos = GetMousePosition();
 
-		if (mousePos.x > resetButton.x && mousePos.x < resetButton.x + resetButton.width && mousePos.y > resetButton.y && mousePos.y < resetButton.y + resetButton.height) {
+		if (INTERSECTS(mousePos, resetButton)) {
 			event.reset = true;
-		} else if (mousePos.x > pauseButton.x && mousePos.x < pauseButton.x + pauseButton.width && mousePos.y > pauseButton.y && mousePos.y < pauseButton.y + pauseButton.height) {
+		} else if (INTERSECTS(mousePos, pauseButton)) {
 			event.pause = true;
-		} else if (mousePos.x > addButton.x && mousePos.x < addButton.x + addButton.width && mousePos.y > addButton.y && mousePos.y < addButton.y + addButton.height) {
+		} else if (INTERSECTS(mousePos, addButton)) {
 			event.add = true;
-		} else if (mousePos.x > subButton.x && mousePos.x < subButton.x + subButton.width && mousePos.y > subButton.y && mousePos.y < subButton.y + subButton.height) {
+		} else if (INTERSECTS(mousePos, subButton)) {
 			event.sub = true;
 		}
+
 	}
 
 	return event;

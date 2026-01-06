@@ -129,8 +129,8 @@ void Gas::Add(const Chamber& chamber) {
 
 void Gas::Sub(const Chamber& chamber) {
     if (density < 1) return;
-
-    molecules[density].active = false;
+    // TODO: check hot and cold balance to choose which to remove
+    molecules[density-1].active = false;
     density--;
 }
 

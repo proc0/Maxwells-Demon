@@ -32,7 +32,7 @@ Memo Game::Update() {
             chamber.Update(memo);
             entropy.Update(memo);
             cache = memo;
-            return cache;
+            return memo;
         } else {
             state = State::PLAY;
         }
@@ -48,7 +48,7 @@ Memo Game::Update() {
         chamber.UpdateColors(memo.stats);
         entropy.Load(memo);
         cache = memo;
-        return cache;
+        return memo;
     }
 
     if (event.sub) {
@@ -61,7 +61,7 @@ Memo Game::Update() {
         chamber.UpdateColors(memo.stats);
         entropy.Load(memo);
         cache = memo;
-        return cache;
+        return memo;
     }
 
     if (state == State::PAUSE) {

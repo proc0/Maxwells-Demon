@@ -20,6 +20,8 @@
 #define SUB_BUTTON_PAD_X(x) (x)+11
 #define SQUARE_PAD_Y(y) (y)+6
 
+#define INTERSECTS(a, b) a.x > b.x && a.x < b.x + b.width && a.y > b.y && a.y < b.y + b.height
+
 #include "common.hpp" // IWYU pragma: keep
 
 class Display {

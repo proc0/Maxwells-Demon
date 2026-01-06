@@ -26,17 +26,17 @@ UIEvent Display::Update() {
 }
 
 void Display::Render() const {
-	DrawRectangleRec(resetButton, GREEN);
-	DrawText(resetText, resetButton.x+7, resetButton.y+7, 15, RAYWHITE);
+	DrawRectangleRec(pauseButton, WHITE);
+	DrawText(pauseText, pauseButton.x+5, pauseButton.y+5, 20, BLACK);
 
-	DrawRectangleRec(addButton, BLUE);
-	DrawText(addText, addButton.x+7, addButton.y+7, 15, RAYWHITE);
-
-	DrawRectangleRec(pauseButton, BLUE);
-	DrawText(pauseText, pauseButton.x+7, pauseButton.y+7, 15, RAYWHITE);
+	DrawRectangleRec(resetButton, WHITE);
+	DrawText(resetText, resetButton.x+5, resetButton.y+5, 20, BLACK);
 
 	DrawRectangleRec(subButton, BLUE);
-	DrawText(subText, subButton.x+7, subButton.y+7, 15, RAYWHITE);
+	DrawText(subText, subButton.x+10, subButton.y+5, 20, RAYWHITE);
+
+	DrawRectangleRec(addButton, RED);
+	DrawText(addText, addButton.x+10, addButton.y+5, 20, RAYWHITE);
 }
 
 void Display::Unload() {

@@ -47,18 +47,19 @@ void Entropy::Render(const Memo& memo) const {
     const char *rightHot = TextFormat("%.f", stats.rightHot);
     const char *rightCold = TextFormat("%.f", stats.rightCold);
 
-    DrawText(leftHot, 280, 15, 20, RED);
-    DrawText(colon, 300, 15, 20, BLACK); 
-    DrawText(leftCold, 308, 15, 20, BLUE);
+    DrawText(leftHot, 390, 630, 20, RED);
+    DrawText(separatorText, 415, 630, 20, BLACK); 
+    DrawText(leftCold, 440, 630, 20, BLUE);
 
-    DrawText(rightHot, 948, 15, 20, RED);
-    DrawText(colon, 970, 15, 20, BLACK);
-    DrawText(rightCold, 980, 15, 20, BLUE);
+    DrawText(rightHot, 800, 630, 20, RED);
+    DrawText(separatorText, 825, 630, 20, BLACK);
+    DrawText(rightCold, 850, 630, 20, BLUE);
 
-    const char *ent = TextFormat("Entropy %.2f", current);
-    const char *max = TextFormat("Max %.2f", maximum);
-    DrawText(ent, 430, 15, 20, BLACK);
-    DrawText(max, 730, 15, 20, BLACK);
+    const char *ent = TextFormat("%.2f", current);
+    const char *max = TextFormat("%.2f", maximum);
+    DrawText(ent, CONTAINER_X, 15, 20, BLACK);
+    DrawText(entropyText, 450, 15, 20, BLACK);
+    DrawText(max, 740, 15, 20, BLACK);
 
     DrawRectangle(BAR_BORDER_X, BAR_BORDER_Y, BAR_BORDER_WIDTH, BAR_BORDER_HEIGHT, BLACK);
     DrawRectangle(BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, RAYWHITE);

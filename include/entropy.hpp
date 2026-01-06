@@ -2,9 +2,9 @@
 
 #include "common.hpp"
 
-#define BAR_WIDTH (CONTAINER_BORDER_WIDTH - 100)
+#define BAR_WIDTH 548
 #define BAR_HEIGHT 5
-#define BAR_X (CONTAINER_BORDER_X + 50)
+#define BAR_X CONTAINER_X
 #define BAR_Y 40
 #define BAR_BORDER_WIDTH BAR_WIDTH+2
 #define BAR_BORDER_HEIGHT 7
@@ -13,7 +13,8 @@
 
 class Entropy {
     Thermal cache;
-    const char *colon = ":";
+    const char *separatorText = "-";
+    const char *entropyText = "Entropy";
 	Color barColor = GRAY;
     float totalHot = 0;
     float totalCold = 0;

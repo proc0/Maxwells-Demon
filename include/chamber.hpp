@@ -14,9 +14,9 @@ typedef struct Wall {
 
 class Chamber {
     std::array<Wall, 3> walls = {
-    	Wall({ Rectangle({633, 200, 15, 150}), 0 }),
-    	Wall({ Rectangle({633, 350, 15, 100}), 1 }),
-    	Wall({ Rectangle({633, 450, 15, 150}), 2 })
+    	Wall({ Rectangle({633, 190, 14, 160}), 0 }),
+    	Wall({ Rectangle({633, 350, 14, 110}), 1 }),
+    	Wall({ Rectangle({633, 460, 14, 160}), 2 })
     };
 	Grid grid;
 	Rectangle sensor = Rectangle({610, 300, 60, 200});

@@ -6,6 +6,7 @@ void Entropy::Load(const Memo& memo) {
     cache = stats;
     totalHot = stats.leftHot + stats.rightHot;
     totalCold = stats.leftCold + stats.rightCold;
+
     // caching for Boltzmann entropy
     totalHotFact = factorial(totalHot);
     totalColdFact = factorial(totalCold);
@@ -19,7 +20,11 @@ void Entropy::Load(const Memo& memo) {
         .rightCold = totalCold - halfCold,
     };
     maximum = calculateBoltzmannEntropy(maxStats);
+
     // the rest shares calculations with Update
+    total = totalHot + totalCold;
+    // centering total depending on digits
+    totalX = total < 10 ? 635 : 630;
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
@@ -34,6 +39,8 @@ void Entropy::Update(const Memo& memo) {
     ) { return; }
 
     cache = memo.stats;
+    total = memo.stats.leftHot + memo.stats.rightHot + memo.stats.leftCold + memo.stats.rightCold;
+    totalX = total < 10 ? 635 : 630;
     current = calculateBoltzmannEntropy(cache);
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
@@ -42,24 +49,27 @@ void Entropy::Update(const Memo& memo) {
 
 void Entropy::Render(const Memo& memo) const {
     const Thermal& stats = memo.stats;
-    const char *leftHot = TextFormat("%.f", stats.leftHot);
-    const char *leftCold = TextFormat("%.f", stats.leftCold);
-    const char *rightHot = TextFormat("%.f", stats.rightHot);
-    const char *rightCold = TextFormat("%.f", stats.rightCold);
 
-    DrawText(leftHot, 390, 630, 20, RED);
-    DrawText(separatorText, 415, 630, 20, BLACK); 
-    DrawText(leftCold, 440, 630, 20, BLUE);
+    const char *leftHotText = TextFormat("%.f", stats.leftHot);
+    DrawText(leftHotText, stats.leftHot < 10 ? 390 : 380, 635, 20, RED);
+    DrawText(separatorText, 415, 635, 20, BLACK); 
+    const char *leftColdText = TextFormat("%.f", stats.leftCold);
+    DrawText(leftColdText, 440, 635, 20, BLUE);
 
-    DrawText(rightHot, 800, 630, 20, RED);
-    DrawText(separatorText, 825, 630, 20, BLACK);
-    DrawText(rightCold, 850, 630, 20, BLUE);
+    const char *totalText = TextFormat("%.f", total);
+    DrawText(totalText, totalX, 635, 20, BLACK);
 
-    const char *ent = TextFormat("%.2f", current);
-    const char *max = TextFormat("%.2f", maximum);
-    DrawText(ent, CONTAINER_X, 15, 20, BLACK);
+    const char *rightHotText = TextFormat("%.f", stats.rightHot);
+    DrawText(rightHotText, stats.rightHot < 10 ? 830 : 820, 635, 20, RED);
+    DrawText(separatorText, 855, 635, 20, BLACK);
+    const char *rightColdText = TextFormat("%.f", stats.rightCold);
+    DrawText(rightColdText, 880, 635, 20, BLUE);
+
+    const char *entropy = TextFormat("%.2f", current);
+    DrawText(entropy, CONTAINER_X, 15, 20, BLACK);
     DrawText(entropyText, 450, 15, 20, BLACK);
-    DrawText(max, 740, 15, 20, BLACK);
+    const char *maxEntropy = TextFormat("%.2f", maximum);
+    DrawText(maxEntropy, 735, 15, 20, BLACK);
 
     DrawRectangle(BAR_BORDER_X, BAR_BORDER_Y, BAR_BORDER_WIDTH, BAR_BORDER_HEIGHT, BLACK);
     DrawRectangle(BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, RAYWHITE);

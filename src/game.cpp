@@ -7,6 +7,7 @@ void Game::Load(short density) {
     Memo memo = {
         .stats = stats
     };
+    cache = memo;
     entropy.Load(memo);
     chamber.Init(memo);
     display.Load();

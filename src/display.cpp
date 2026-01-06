@@ -26,17 +26,19 @@ UIEvent Display::Update() {
 }
 
 void Display::Render() const {
-	DrawRectangleRec(pauseButton, WHITE);
-	DrawText(pauseText, pauseButton.x+5, pauseButton.y+5, 20, BLACK);
+	DrawRectangleRec(pauseButtonBorder, BLACK);
+	DrawRectangleRec(pauseButton, RAYWHITE);
+	DrawText(pauseText, RECTANGLE_PAD_X(PAUSE_BUTTON_X), RECTANGLE_PAD_Y(PAUSE_BUTTON_Y), FONT_SIZE, BLACK);
 
-	DrawRectangleRec(resetButton, WHITE);
-	DrawText(resetText, resetButton.x+5, resetButton.y+5, 20, BLACK);
+	DrawRectangleRec(resetButtonBorder, BLACK);
+	DrawRectangleRec(resetButton, RAYWHITE);
+	DrawText(resetText, RECTANGLE_PAD_X(RESET_BUTTON_X), RECTANGLE_PAD_Y(RESET_BUTTON_Y), FONT_SIZE, BLACK);
 
 	DrawRectangleRec(subButton, BLUE);
-	DrawText(subText, subButton.x+10, subButton.y+5, 20, RAYWHITE);
+	DrawText(subText, SUB_BUTTON_PAD_X(SUB_BUTTON_X), SQUARE_PAD_Y(SUB_BUTTON_Y), FONT_SIZE, RAYWHITE);
 
 	DrawRectangleRec(addButton, RED);
-	DrawText(addText, addButton.x+10, addButton.y+5, 20, RAYWHITE);
+	DrawText(addText, SQUARE_PAD_X(ADD_BUTTON_X), SQUARE_PAD_Y(ADD_BUTTON_Y), FONT_SIZE, RAYWHITE);
 }
 
 void Display::Unload() {

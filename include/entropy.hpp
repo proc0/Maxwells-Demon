@@ -18,11 +18,13 @@ class Entropy {
 	Color barColor = GRAY;
     float totalHot = 0;
     float totalCold = 0;
+    float total = 0;
     float totalHotFact = 0;
     float totalColdFact = 0;
     float percent = 0.0f;
     float current = 0.0f;
     float maximum = 0.0f;
+    int totalX = 630;
     int barLength = 0;
 
 public:

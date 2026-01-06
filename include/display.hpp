@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common.hpp"
+
 #define FONT_SIZE 20
 #define BORDER_WIDTH 6
 #define PAUSE_BUTTON_X 830
@@ -21,8 +23,6 @@
 #define SQUARE_PAD_Y(y) (y)+6
 
 #define INTERSECTS(a, b) a.x > b.x && a.x < b.x + b.width && a.y > b.y && a.y < b.y + b.height
-
-#include "common.hpp" // IWYU pragma: keep
 
 class Display {
 	Rectangle resetButton = Rectangle({ RESET_BUTTON_X, RESET_BUTTON_Y, RECTANGLE_BUTTON_WIDTH, RECTANGLE_BUTTON_HEIGHT }); 

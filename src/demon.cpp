@@ -26,7 +26,7 @@ void Demon::Update() {
             return;
         }
 
-        frame.x -= FRAMES[frameCount] * frame.width;
+        frame.x -= DEMON_FRAMES[frameCount] * frame.width;
 
         frameCount--;
     }
@@ -40,7 +40,7 @@ void Demon::Update() {
 
         isLoweringArm = false;
 
-        frame.x += FRAMES[frameCount] * frame.width;
+        frame.x += DEMON_FRAMES[frameCount] * frame.width;
 
         frameCount++;
     }

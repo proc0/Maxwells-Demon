@@ -51,11 +51,11 @@ void Chamber::Update(const Memo& memo) {
 
     if (isDoorClosing) {
         if (doorFrame == 0 && door.rect.y < DOOR_MAX_Y) {
-            doorFrame = EASE_OUT_MAX_FRAMES;
+            doorFrame = DOOR_MAX_FRAMES;
         }
 
         if (doorFrame > 0) {
-            door.rect.y += EASE_OUT_FRAMES[doorFrame] * 10;
+            door.rect.y += DOOR_FRAMES[doorFrame] * 10;
             if (door.rect.y >= DOOR_MAX_Y) {
                 door.rect.y = DOOR_MAX_Y;
                 isDoorClosing = false;
@@ -67,11 +67,11 @@ void Chamber::Update(const Memo& memo) {
         isDoorClosing = false;
 
         if (doorFrame == 0 && door.rect.y > DOOR_MIN_Y) {
-            doorFrame = EASE_OUT_MAX_FRAMES;
+            doorFrame = DOOR_MAX_FRAMES;
         }
 
         if (doorFrame > 0) {
-            door.rect.y -= EASE_OUT_FRAMES[doorFrame] * 10;
+            door.rect.y -= DOOR_FRAMES[doorFrame] * 10;
             if (door.rect.y <= DOOR_MIN_Y) {
                 door.rect.y = DOOR_MIN_Y;
             }

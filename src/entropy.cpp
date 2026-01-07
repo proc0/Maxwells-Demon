@@ -2,6 +2,7 @@
 #include "raylib.h"
 
 void Entropy::Load(const Memo& memo) {
+    maxwell = LoadTexture("assets/maxwell.png");
     const Thermal& stats = memo.stats;
     cache = stats;
     totalHot = stats.leftHot + stats.rightHot;
@@ -32,6 +33,32 @@ void Entropy::Load(const Memo& memo) {
 }
 
 void Entropy::Update(const Memo& memo) {
+
+    if (isToasty) {
+        maxwellFrameIndex++;
+
+        if (maxwellFrameIndex >= 120) {
+            maxwellPosition.x += INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
+            maxwellPosition.y += INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
+            if (maxwellFrameIndex >= 240) {
+                isToasty = false;
+                maxwellFrameIndex = 0;
+                maxwellPosition = Vector2({ static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT) });
+            }
+        } else if (maxwellPosition.x > MAXWELL_DESTINATION_X || maxwellPosition.y > MAXWELL_DESTINATION_Y) {
+            maxwellPosition.x -= INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
+            maxwellPosition.y -= INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
+            if (maxwellPosition.x < MAXWELL_DESTINATION_X || maxwellPosition.y < MAXWELL_DESTINATION_Y) {
+                maxwellPosition.x = MAXWELL_DESTINATION_X;
+                maxwellPosition.y = MAXWELL_DESTINATION_Y;
+            }
+        }
+    }
+
+    if (IsKeyReleased(KEY_SPACE)) {
+        isToasty = true;
+    }
+
     if ( cache.leftHot == memo.stats.leftHot && 
         cache.leftCold == memo.stats.leftCold && 
         cache.rightHot == memo.stats.rightHot && 
@@ -45,6 +72,7 @@ void Entropy::Update(const Memo& memo) {
     percent = current / maximum;
     barLength = BAR_WIDTH * percent;
     barColor = ColorLerp(LIME, YELLOW, percent);
+
 }
 
 void Entropy::Render(const Memo& memo) const {
@@ -74,6 +102,10 @@ void Entropy::Render(const Memo& memo) const {
     DrawRectangle(BAR_BORDER_X, BAR_BORDER_Y, BAR_BORDER_WIDTH, BAR_BORDER_HEIGHT, BLACK);
     DrawRectangle(BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, RAYWHITE);
     DrawRectangle(BAR_X, BAR_Y, barLength, BAR_HEIGHT, barColor);
+
+    if (isToasty) {
+        DrawTexture(maxwell, maxwellPosition.x, maxwellPosition.y, WHITE);
+    }
 }
 
 float Entropy::calculateBoltzmannEntropy(const Thermal stats) const
@@ -87,7 +119,7 @@ float Entropy::calculateBoltzmannEntropy(const Thermal stats) const
 }
 
 void Entropy::Unload() {
-
+    UnloadTexture(maxwell);
 }
 
 // float Entropy::calculateShannonEntropy(const Thermal stats) const {

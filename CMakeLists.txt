@@ -226,7 +226,7 @@ if(IS_WEB)
         -sWASM=1
         -sEXPORT_ES6=1
         -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPF32 
-        # --preload-file "../${DIR_ASSETS}"
+        --preload-file "../${DIR_ASSETS}"
         --shell-file "${PATH_WEB_SHELL}"
     )
 

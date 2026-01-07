@@ -4,6 +4,9 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+
 #define MOLECULE_RADIUS 12.0f
 
 #define CONTAINER_WIDTH 820
@@ -19,19 +22,6 @@
 #define CONTAINER_BOTTOM (CONTAINER_Y + CONTAINER_BORDER_HEIGHT)
 
 #define INVERSE_EXPONENTIAL(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
-
-#define EASE_OUT_MAX_FRAMES 59
-#define EASE_OUT_EXPONENTIAL(frame) INVERSE_EXPONENTIAL((1.0f / (frame)) * EASE_OUT_MAX_FRAMES)
-
-constexpr std::array<short, EASE_OUT_MAX_FRAMES+1> generate_ease_out_frames() {
-    std::array<short, EASE_OUT_MAX_FRAMES+1> frames{};
-    for (short i = EASE_OUT_MAX_FRAMES; i > 0; --i) {
-        frames[i] = EASE_OUT_EXPONENTIAL(i);
-    }
-    return frames;
-}
-
-constexpr const auto EASE_OUT_FRAMES = generate_ease_out_frames();
 
 static inline float factorial(float n) {
     float f = 1;

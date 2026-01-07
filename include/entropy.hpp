@@ -11,11 +11,17 @@
 #define BAR_BORDER_X BAR_X-1
 #define BAR_BORDER_Y BAR_Y-1
 
+#define MAXWELL_MAX_FRAMES 60;
+#define MAXWELL_DESTINATION_X 1030
+#define MAXWELL_DESTINATION_Y 480
+
 class Entropy {
+    Texture2D maxwell;
     Thermal cache;
     const char *separatorText = "-";
     const char *entropyText = "Entropy";
 	Color barColor = GRAY;
+    Vector2 maxwellPosition = Vector2({ static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT) });
     float totalHot = 0;
     float totalCold = 0;
     float total = 0;
@@ -26,6 +32,8 @@ class Entropy {
     float maximum = 0.0f;
     int totalX = 630;
     int barLength = 0;
+    short maxwellFrameIndex = 0;
+    bool isToasty = false;
 
 public:
 	Entropy(){};

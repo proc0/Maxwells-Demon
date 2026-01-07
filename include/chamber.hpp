@@ -7,6 +7,19 @@
 #define DOOR_MAX_Y 350.0f
 #define DOOR_OPEN_FRAMES 60
 
+#define DOOR_MAX_FRAMES 59
+#define DOOR_EASE_OUT(frame) INVERSE_EXPONENTIAL((1.0f / (frame)) * DOOR_MAX_FRAMES)
+
+constexpr std::array<short, DOOR_MAX_FRAMES+1> generate_ease_out_frames() {
+    std::array<short, DOOR_MAX_FRAMES+1> frames{};
+    for (short i = DOOR_MAX_FRAMES; i > 0; --i) {
+        frames[i] = DOOR_EASE_OUT(i);
+    }
+    return frames;
+}
+
+constexpr const auto DOOR_FRAMES = generate_ease_out_frames();
+
 typedef struct Wall {
     Rectangle rect;
     int id;

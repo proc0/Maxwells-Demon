@@ -8,6 +8,7 @@
 #include "entropy.hpp"
 #include "chamber.hpp"
 #include "gas.hpp"
+#include "demon.hpp"
 #include "display.hpp"
 
 #define SCREEN_WIDTH 1280
@@ -16,8 +17,9 @@
 class Game {
     Gas gas;
     Chamber chamber;
-    Entropy entropy;
     Display display;
+    Entropy entropy;
+    Demon demon;
 
     enum State {
         PLAY,

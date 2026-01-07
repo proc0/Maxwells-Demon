@@ -1,5 +1,4 @@
 #include "game.hpp"
-#include "raylib.h"
 
 void Game::Load(short density) {
     chamber.Load();
@@ -10,6 +9,7 @@ void Game::Load(short density) {
     cache = memo;
     entropy.Load(memo);
     chamber.Init(memo);
+    demon.Load();
     display.Load();
 }
 
@@ -74,7 +74,8 @@ Memo Game::Update() {
     };
     chamber.Update(memo);
     entropy.Update(memo);
-
+    demon.Update();
+    
     return memo;
 }
 
@@ -86,6 +87,7 @@ void Game::Render(const Memo& memo) const {
     gas.Render();
     entropy.Render(memo);
     display.Render();
+    demon.Render();
 
     // DrawFPS(20, 20);
     EndDrawing();
@@ -113,10 +115,11 @@ void Game::Run() {
 }
 
 void Game::Unload() {
-    gas.Unload();
+    display.Unload();
+    demon.Unload();
     entropy.Unload();
     chamber.Unload();
-    display.Unload();
+    gas.Unload();
 }
 
 // #if __EMSCRIPTEN__

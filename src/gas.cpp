@@ -1,5 +1,4 @@
 #include "gas.hpp"
-#include "raylib.h"
 
 Thermal Gas::Load(const Chamber& chamber, short density) {
     this->density = density;

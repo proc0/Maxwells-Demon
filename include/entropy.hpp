@@ -17,6 +17,7 @@
 
 class Entropy {
     Texture2D maxwell;
+    Sound toasty;
     Thermal cache;
     const char *separatorText = "-";
     const char *entropyText = "Entropy";
@@ -34,6 +35,7 @@ class Entropy {
     int barLength = 0;
     short maxwellFrameIndex = 0;
     bool isToasty = false;
+    bool isToastyPlayed = false;
 
 public:
 	Entropy(){};

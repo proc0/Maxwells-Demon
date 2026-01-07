@@ -3,6 +3,7 @@
 
 void Entropy::Load(const Memo& memo) {
     maxwell = LoadTexture("assets/maxwell.png");
+    toasty = LoadSound("assets/toasty.mp3");
     const Thermal& stats = memo.stats;
     cache = stats;
     totalHot = stats.leftHot + stats.rightHot;
@@ -37,11 +38,17 @@ void Entropy::Update(const Memo& memo) {
     if (isToasty) {
         maxwellFrameIndex++;
 
+        if (!isToastyPlayed) {
+            PlaySound(toasty);
+            isToastyPlayed = true;
+        }
+
         if (maxwellFrameIndex >= 120) {
             maxwellPosition.x += INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
             maxwellPosition.y += INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
             if (maxwellFrameIndex >= 240) {
                 isToasty = false;
+                isToastyPlayed = false;
                 maxwellFrameIndex = 0;
                 maxwellPosition = Vector2({ static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT) });
             }
@@ -120,6 +127,7 @@ float Entropy::calculateBoltzmannEntropy(const Thermal stats) const
 
 void Entropy::Unload() {
     UnloadTexture(maxwell);
+    UnloadSound(toasty);
 }
 
 // float Entropy::calculateShannonEntropy(const Thermal stats) const {

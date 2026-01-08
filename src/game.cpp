@@ -11,6 +11,19 @@ void Game::Load(short density) {
     chamber.Init(memo);
     demon.Load();
     display.Load();
+    maxwell->Load();
+}
+
+void Game::Init(short density) {
+    chamber.Load();
+    Thermal stats = gas.Load(chamber, density);
+    Memo memo = {
+        .stats = stats
+    };
+    cache = memo;
+    entropy.Init(memo);
+    chamber.Init(memo);
+    maxwell->Init();
 }
 
 Memo Game::Update() {
@@ -18,7 +31,7 @@ Memo Game::Update() {
     UIEvent event = display.Update();
 
     if (event.reset) {
-        Load(25);
+        Init(25);
         return cache;
     }
 
@@ -46,7 +59,7 @@ Memo Game::Update() {
         };
         chamber.Init(memo);
         chamber.UpdateColors(memo.stats);
-        entropy.Load(memo);
+        entropy.Init(memo);
         cache = memo;
         return memo;
     }
@@ -59,7 +72,7 @@ Memo Game::Update() {
         };
         chamber.Init(memo);
         chamber.UpdateColors(memo.stats);
-        entropy.Load(memo);
+        entropy.Init(memo);
         cache = memo;
         return memo;
     }
@@ -73,9 +86,18 @@ Memo Game::Update() {
         .stats = stats
     };
     chamber.Update(memo);
-    entropy.Update(memo);
+    bool isZero = entropy.Update(memo);
     demon.Update();
-    
+
+    if(isZero && !isToasted) {
+        maxwell->Toasty();
+        isToasted = true;
+    }
+
+    if (isToasted) {
+        maxwell->Update();
+    }
+
     return memo;
 }
 
@@ -88,7 +110,7 @@ void Game::Render(const Memo& memo) const {
     entropy.Render(memo);
     display.Render();
     demon.Render();
-
+    maxwell->Render();
     // DrawFPS(20, 20);
     EndDrawing();
 }
@@ -115,6 +137,8 @@ void Game::Run() {
 }
 
 void Game::Unload() {
+    maxwell->Unload();
+    delete maxwell;
     display.Unload();
     demon.Unload();
     entropy.Unload();

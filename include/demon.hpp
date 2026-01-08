@@ -2,7 +2,7 @@
 
 #include "common.hpp"
 
-#define DEMON_ATLAS_URI "assets/demon2.png"
+#define DEMON_ATLAS_URI "assets/demon.png"
 
 #define DEMON_MAX_FRAMES 12
 #define DEMON_EASE_OUT(frame) INVERSE_EXPONENTIAL((1.0f / (frame)) * DEMON_MAX_FRAMES)

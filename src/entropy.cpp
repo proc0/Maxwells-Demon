@@ -2,8 +2,10 @@
 #include "raylib.h"
 
 void Entropy::Load(const Memo& memo) {
-    maxwell = LoadTexture("assets/maxwell.png");
-    toasty = LoadSound("assets/toasty.mp3");
+    Init(memo);
+}
+
+void Entropy::Init(const Memo& memo) {
     const Thermal& stats = memo.stats;
     cache = stats;
     totalHot = stats.leftHot + stats.rightHot;
@@ -33,44 +35,12 @@ void Entropy::Load(const Memo& memo) {
     barColor = ColorLerp(LIME, YELLOW, percent);
 }
 
-void Entropy::Update(const Memo& memo) {
-
-    if (isToasty) {
-        maxwellFrameIndex++;
-
-        if (!isToastyPlayed) {
-            PlaySound(toasty);
-            isToastyPlayed = true;
-        }
-
-        if (maxwellFrameIndex >= 120) {
-            maxwellPosition.x += INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
-            maxwellPosition.y += INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
-            if (maxwellFrameIndex >= 240) {
-                isToasty = false;
-                isToastyPlayed = false;
-                maxwellFrameIndex = 0;
-                maxwellPosition = Vector2({ static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT) });
-            }
-        } else if (maxwellPosition.x > MAXWELL_DESTINATION_X || maxwellPosition.y > MAXWELL_DESTINATION_Y) {
-            maxwellPosition.x -= INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
-            maxwellPosition.y -= INVERSE_EXPONENTIAL(maxwellFrameIndex)*60;
-            if (maxwellPosition.x < MAXWELL_DESTINATION_X || maxwellPosition.y < MAXWELL_DESTINATION_Y) {
-                maxwellPosition.x = MAXWELL_DESTINATION_X;
-                maxwellPosition.y = MAXWELL_DESTINATION_Y;
-            }
-        }
-    }
-
-    if (IsKeyReleased(KEY_SPACE)) {
-        isToasty = true;
-    }
-
+bool Entropy::Update(const Memo& memo) {
     if ( cache.leftHot == memo.stats.leftHot && 
         cache.leftCold == memo.stats.leftCold && 
         cache.rightHot == memo.stats.rightHot && 
         cache.rightCold == memo.stats.rightCold
-    ) { return; }
+    ) { return false; }
 
     cache = memo.stats;
     total = memo.stats.leftHot + memo.stats.rightHot + memo.stats.leftCold + memo.stats.rightCold;
@@ -80,6 +50,7 @@ void Entropy::Update(const Memo& memo) {
     barLength = BAR_WIDTH * percent;
     barColor = ColorLerp(LIME, YELLOW, percent);
 
+    return current <= 0.0f;
 }
 
 void Entropy::Render(const Memo& memo) const {
@@ -109,10 +80,6 @@ void Entropy::Render(const Memo& memo) const {
     DrawRectangle(BAR_BORDER_X, BAR_BORDER_Y, BAR_BORDER_WIDTH, BAR_BORDER_HEIGHT, BLACK);
     DrawRectangle(BAR_X, BAR_Y, BAR_WIDTH, BAR_HEIGHT, RAYWHITE);
     DrawRectangle(BAR_X, BAR_Y, barLength, BAR_HEIGHT, barColor);
-
-    if (isToasty) {
-        DrawTexture(maxwell, maxwellPosition.x, maxwellPosition.y, WHITE);
-    }
 }
 
 float Entropy::calculateBoltzmannEntropy(const Thermal stats) const
@@ -126,8 +93,7 @@ float Entropy::calculateBoltzmannEntropy(const Thermal stats) const
 }
 
 void Entropy::Unload() {
-    UnloadTexture(maxwell);
-    UnloadSound(toasty);
+
 }
 
 // float Entropy::calculateShannonEntropy(const Thermal stats) const {

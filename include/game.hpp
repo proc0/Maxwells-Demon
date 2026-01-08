@@ -10,9 +10,7 @@
 #include "gas.hpp"
 #include "demon.hpp"
 #include "display.hpp"
-
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#include "maxwell.hpp"
 
 class Game {
     Gas gas;
@@ -20,14 +18,16 @@ class Game {
     Display display;
     Entropy entropy;
     Demon demon;
+    Memo cache = { .stats = {0} };
+    Maxwell* maxwell = new Maxwell();
 
     enum State {
         PLAY,
         PAUSE,
     };
     State state = State::PLAY;
-    Memo cache = { .stats = {0} };
-    
+    bool isToasted = false;
+
     public:
         int screenWidth = SCREEN_WIDTH;
         int screenHeight = SCREEN_HEIGHT;
@@ -36,6 +36,7 @@ class Game {
         ~Game() = default;
         
         void Load(short density);
+        void Init(short density);
         static void Loop(void *self);
         void Render(const Memo&) const;
         void Resize();

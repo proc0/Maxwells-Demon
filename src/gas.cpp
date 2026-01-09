@@ -1,4 +1,5 @@
 #include "gas.hpp"
+#include "raylib.h"
 
 Thermal Gas::Load(const Chamber& chamber, short density) {
     this->density = density;
@@ -8,12 +9,7 @@ Thermal Gas::Load(const Chamber& chamber, short density) {
 
 Thermal Gas::Populate(const Chamber& chamber) {
 
-    // float leftChamberHotCount = 0;
-    // float leftChamberCoolCount = 0;
-    // float rightChamberHotCount = 0;
-    // float rightChamberCoolCount = 0;
     float totalHotCount = 0;
-    // float totalCoolCount = 0;
     short densityCount = density < MAX_DENSITY ? density : MAX_DENSITY;
     short maxHotCount = densityCount/2;
 
@@ -21,8 +17,10 @@ Thermal Gas::Populate(const Chamber& chamber) {
         mol.active = false;
     }
 
+    bool isLastHot = false;
     for (short i = 0; i < densityCount; i++) {
-        bool isHot = true;
+        bool isHot = !isLastHot;
+        isLastHot = isHot;
         if(totalHotCount > maxHotCount) {
             isHot = false;
         }
@@ -60,30 +58,19 @@ Thermal Gas::Populate(const Chamber& chamber) {
             totalHotCount++;
             if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
-                // leftChamberHotCount++;
             } else {
-                // rightChamberHotCount++;
                 molecules[i].isLeft = false;
             }
         } else {
-            // totalCoolCount++;
             if (chamber.IsLeft(molecules[i].position, molecules[i].radius)) {
                 molecules[i].isLeft = true;
-                // leftChamberCoolCount++;
             } else {
-                // rightChamberCoolCount++;
                 molecules[i].isLeft = false;
             }
         }
     }
 
     return Update(chamber);
-    // return {
-    //     .leftHot = leftChamberHotCount,
-    //     .leftCold = leftChamberCoolCount,
-    //     .rightHot = rightChamberHotCount,
-    //     .rightCold = rightChamberCoolCount,
-    // };
 }
 
 void Gas::Add(const Chamber& chamber) {
@@ -128,8 +115,8 @@ void Gas::Add(const Chamber& chamber) {
 
 void Gas::Sub(const Chamber& chamber) {
     if (density < 1) return;
-    // TODO: check hot and cold balance to choose which to remove
     molecules[density-1].active = false;
+    grid.RemovePoint(molecules[density-1].cell, molecules[density-1].id);
     density--;
 }
 

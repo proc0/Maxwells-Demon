@@ -12,6 +12,7 @@
 class Maxwell {
 	Texture2D maxwell;
     Sound toasty;
+    const char* helpText = "Press [SPACEBAR] to open chamber door";
     Vector2 maxwellPosition = Vector2({ static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT) });
     short maxwellFrameIndex = 0;
     bool isToasty = false;

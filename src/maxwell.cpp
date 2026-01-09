@@ -1,4 +1,5 @@
 #include "maxwell.hpp"
+#include "raylib.h"
 
 void Maxwell::Load() {
     maxwell = LoadTexture(MAXWELL_URI);
@@ -47,6 +48,7 @@ void Maxwell::Render() const {
     if (isToasty) {
         DrawTexture(maxwell, maxwellPosition.x, maxwellPosition.y, WHITE);
     }
+    DrawText(helpText, 460, 680, 18, BLACK);
 }
 
 void Maxwell::Toasty() {

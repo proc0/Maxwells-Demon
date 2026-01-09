@@ -1,102 +1,20 @@
 # Maxwell's Demon
 
-Maxwell's Demon - watch the demon seperate molecules and lower the entropy of the system or try doing it yourself.
+Lower the entropy of the system.
 
-<img src="screenshot000.png" />
+<img src="screenshot.png" />
 
-## Quick Start (Desktop Debug Build)
+## Controls
 
-1. **clone** this repo
+Spacebar to open chamber door.
 
-```shell
-git clone --depth=1 https://github.com/proc0/raystart.git`
-```
+## Itch.io
 
-2. **rename** folder to project name
 
-#### Linux/Mac
-
-```bash
-mv raystart mygame
-```
-
-#### Windows
-
-```powershell
-ren raystart mygame
-```
-
-3. **navigate** into project folder
-
-```shell
-cd mygame
-```
-
-4. **build** and **run** using build script
-
-#### Linux/Mac
-
-```bash
-chmod +x ./build.sh
-./build.sh --run
-```
-
-#### Windows
-
-```powershell
-.\build.ps1 --run
-```
-
-Sample Output:
-
-<pre>
--- Generating done (0.0s)
--- Build files have been written to: C:/Users/User/Source/raystart/build
--- Host System: Windows
---
--- Windows Desktop Debug Build
---
--- Using local Raylib: C:/raylib/raylib/src
--- Configuring done (0.3s)
--- Generating done (0.0s)
--- Build files have been written to: C:/Users/User/Source/raystart/build
-[ 33%] Building CXX object CMakeFiles/raystart.dir/src/game.cpp.obj
-[ 66%] Building CXX object CMakeFiles/raystart.dir/src/main.cpp.obj
-[100%] Linking CXX executable raystart.exe
-[100%] Built target raystart
-</pre>
-
-## Features
-
-- Multiple ways to use Raylib
-  - Use a local build (set path in CMakeLists)
-  - Fetch and build Raylib from source
-  - Fetch and build a custom Raylib build (WIP/TBD)
-- Flexible build configuration
-  - Change folder names easily
-- Supports saving build info in a config file (Optional)
-  - Copies build type info, i.e. Debug or Release, for use in app logic
-- Supports mulitple platforms and targets
-  - Platforms: Windows, MacOS, Linux
-  - Targets: Desktop, Web (with Emscripten)
-- Ergonomic build script
-  - Abstracts CMake commands
-  - Intuitive parameters for build options
-
-## Requirements
-
-- [CMake](https://cmake.org)
-- [Emscripten](https://emscripten.org)
-
-Tested with the following compilers and toolchains (WIP):
-
-- Linux / MacOS
-  - g++
-  - make
-- Windows
-  - [w64devkit](https://github.com/skeeto/w64devkit)
 
 ## Build Command Examples
+
+For full build instructions see: [https://github.com/proc0/raystart](https://github.com/proc0/raystart)
 
 Substitute `./build.sh` for `.\build.ps1` on Windows.
 
@@ -129,19 +47,6 @@ Substitute `./build.sh` for `.\build.ps1` on Windows.
 - [Raylib](https://github.com/raysan5/raylib)
 - [Raylib Web build instructions](<https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)>)
 - [Emscripten](https://emscripten.org)
-
-## Folder structure
-
-<pre>
-my-project
-├───assets    # project assets
-├───build     # build folder
-├───build-web # web build folder
-├───dist      # install folder
-├───dist-web  # web install folder
-├───include   # header files
-└───src       # source files
-</pre>
 
 ## Build Script Usage
 

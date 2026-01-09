@@ -3,9 +3,7 @@
 void Game::Load(short density) {
     chamber.Load();
     Thermal stats = gas.Load(chamber, density);
-    Memo memo = {
-        .stats = stats
-    };
+    Memo memo = { .stats = stats };
     cache = memo;
     entropy.Load(memo);
     chamber.Init(memo);
@@ -17,13 +15,12 @@ void Game::Load(short density) {
 void Game::Init(short density) {
     chamber.Load();
     Thermal stats = gas.Load(chamber, density);
-    Memo memo = {
-        .stats = stats
-    };
+    Memo memo = { .stats = stats };
     cache = memo;
     entropy.Init(memo);
     chamber.Init(memo);
     maxwell->Init();
+    isToasted = false;
 }
 
 Memo Game::Update() {
@@ -31,7 +28,7 @@ Memo Game::Update() {
     UIEvent event = display.Update();
 
     if (event.reset) {
-        Init(25);
+        Init(DENSITY_START);
         return cache;
     }
 
@@ -39,9 +36,7 @@ Memo Game::Update() {
         if (state == State::PLAY) {
             state = State::PAUSE;
             Thermal stats = gas.Update(chamber);
-            Memo memo = {
-                .stats = stats
-            };
+            Memo memo = { .stats = stats };
             chamber.Update(memo);
             entropy.Update(memo);
             cache = memo;
@@ -54,9 +49,7 @@ Memo Game::Update() {
     if (event.add) {
         gas.Add(chamber);
         Thermal stats = gas.Count();
-        Memo memo = {
-            .stats = stats
-        };
+        Memo memo = { .stats = stats };
         chamber.Init(memo);
         chamber.UpdateColors(memo.stats);
         entropy.Init(memo);
@@ -67,9 +60,7 @@ Memo Game::Update() {
     if (event.sub) {
         gas.Sub(chamber);
         Thermal stats = gas.Count();
-        Memo memo = {
-            .stats = stats
-        };
+        Memo memo = { .stats = stats };
         chamber.Init(memo);
         chamber.UpdateColors(memo.stats);
         entropy.Init(memo);
@@ -82,13 +73,11 @@ Memo Game::Update() {
     }
 
     Thermal stats = gas.Update(chamber);
-    Memo memo = {
-        .stats = stats
-    };
+    Memo memo = { .stats = stats };
     chamber.Update(memo);
-    bool isZero = entropy.Update(memo);
     demon.Update();
 
+    bool isZero = entropy.Update(memo);
     if(isZero && !isToasted) {
         maxwell->Toasty();
         isToasted = true;

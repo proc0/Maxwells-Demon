@@ -14,7 +14,7 @@ int main(void){
     InitWindow(client.screenWidth, client.screenHeight, PROJECT_NAME);
     InitAudioDevice();
     
-    client.Load(7);
+    client.Load(DENSITY_START);
     client.Run();
     client.Unload();
 

@@ -19,11 +19,9 @@ constexpr const auto DEMON_FRAMES = generate_frames();
 
 class Demon {
 	Texture2D demonAtlas;
-	Rectangle frame = Rectangle({ 0, 0, 150, 188 });
-	Vector2 position = Vector2({ 505, 10 });
-	int framePosition = 0;
+	Rectangle frame = Rectangle({ 0, 0, 123, 172 });
+	Vector2 position = Vector2({ 530, 20 });
 	int frameCount = 0;
-	int frameSpeed = 2;
 	bool isLoweringArm = false;
 
 public:

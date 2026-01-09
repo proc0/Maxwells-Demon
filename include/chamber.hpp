@@ -3,8 +3,8 @@
 #include "common.hpp" 
 #include "grid.hpp"
 
-#define DOOR_MIN_Y 250.0f
-#define DOOR_MAX_Y 350.0f
+#define DOOR_MIN_Y 200.0f
+#define DOOR_MAX_Y 330.0f
 #define DOOR_OPEN_FRAMES 60
 
 #define DOOR_MAX_FRAMES 59
@@ -27,9 +27,9 @@ typedef struct Wall {
 
 class Chamber {
     std::array<Wall, 3> walls = {
-    	Wall({ Rectangle({633, 190, 14, 160}), 0 }),
-    	Wall({ Rectangle({633, 350, 14, 110}), 1 }),
-    	Wall({ Rectangle({633, 460, 14, 160}), 2 })
+    	Wall({ Rectangle({633, 190, 14, 155}), 0 }),
+    	Wall({ Rectangle({633, 330, 14, 140}), 1 }),
+    	Wall({ Rectangle({633, 460, 14, 155}), 2 })
     };
 	Grid grid;
 	Rectangle sensor = Rectangle({610, 300, 60, 200});

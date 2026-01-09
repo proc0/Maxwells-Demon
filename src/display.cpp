@@ -35,11 +35,13 @@ void Display::Render() const {
 	DrawRectangleRec(resetButton, RAYWHITE);
 	DrawText(resetText, RECTANGLE_PAD_X(RESET_BUTTON_X), RECTANGLE_PAD_Y(RESET_BUTTON_Y), FONT_SIZE, BLACK);
 
-	DrawRectangleRec(subButton, BLUE);
-	DrawText(subText, SUB_BUTTON_PAD_X(SUB_BUTTON_X), SQUARE_PAD_Y(SUB_BUTTON_Y), FONT_SIZE, RAYWHITE);
+	DrawRectangleRec(subButtonBorder, BLACK);
+	DrawRectangleRec(subButton, RAYWHITE);
+	DrawText(subText, SUB_BUTTON_PAD_X(SUB_BUTTON_X), SQUARE_PAD_Y(SUB_BUTTON_Y), FONT_SIZE, BLACK);
 
-	DrawRectangleRec(addButton, RED);
-	DrawText(addText, SQUARE_PAD_X(ADD_BUTTON_X), SQUARE_PAD_Y(ADD_BUTTON_Y), FONT_SIZE, RAYWHITE);
+	DrawRectangleRec(addButtonBorder, BLACK);
+	DrawRectangleRec(addButton, RAYWHITE);
+	DrawText(addText, SQUARE_PAD_X(ADD_BUTTON_X), SQUARE_PAD_Y(ADD_BUTTON_Y), FONT_SIZE, BLACK);
 }
 
 void Display::Unload() {

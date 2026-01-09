@@ -10,7 +10,7 @@ Spacebar to open chamber door.
 
 ## Itch.io
 
-
+[https://proc0.itch.io/maxwells-demon](https://proc0.itch.io/maxwells-demon)
 
 ## Build Command Examples
 

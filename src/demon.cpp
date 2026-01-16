@@ -5,18 +5,15 @@ void Demon::Load() {
 }
 
 void Demon::Update() {
-    // frameCount++;
+    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+        const Vector2& mousePos = GetMousePosition();
 
-    // if (frameCount >= (60/frameSpeed)) {
-    //     frameCount = 0;
-    //     framePosition++;
+        if ((INTERSECTS(mousePos, displayPanelTop)) || (INTERSECTS(mousePos, displayPanelBottom))) {
+            return;
+        }
+    }
 
-    //     if (framePosition > 24) framePosition = 0;
-
-    //     frame.x = static_cast<float>(framePosition*frame.width);
-    // }
-
-    if (IsKeyReleased(KEY_SPACE)) {
+    if (IsKeyReleased(KEY_SPACE) || IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         isLoweringArm = true;
     }
 
@@ -31,7 +28,7 @@ void Demon::Update() {
         frameCount--;
     }
 
-    if (IsKeyDown(KEY_SPACE)) {
+    if (IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
 
         if (frame.x >= demonAtlas.width-frame.width) {
             // frame.x = demonAtlas.width-frame.width;

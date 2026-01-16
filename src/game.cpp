@@ -74,8 +74,8 @@ Memo Game::Update() {
 
     Thermal stats = gas.Update(chamber);
     Memo memo = { .stats = stats };
-    chamber.Update(memo);
     demon.Update();
+    chamber.Update(memo);
 
     bool isZero = entropy.Update(memo);
     if(isZero && !isToasted) {

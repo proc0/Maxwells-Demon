@@ -22,8 +22,6 @@
 #define SUB_BUTTON_PAD_X(x) (x)+11
 #define SQUARE_PAD_Y(y) (y)+6
 
-#define INTERSECTS(a, b) a.x > b.x && a.x < b.x + b.width && a.y > b.y && a.y < b.y + b.height
-
 class Display {
 	Rectangle resetButton = Rectangle({ RESET_BUTTON_X, RESET_BUTTON_Y, RECTANGLE_BUTTON_WIDTH, RECTANGLE_BUTTON_HEIGHT }); 
 	Rectangle resetButtonBorder = Rectangle({ RESET_BUTTON_X - BORDER_WIDTH/2.0f, RESET_BUTTON_Y - BORDER_WIDTH/2.0f, RECTANGLE_BUTTON_WIDTH + BORDER_WIDTH, RECTANGLE_BUTTON_HEIGHT + BORDER_WIDTH }); 

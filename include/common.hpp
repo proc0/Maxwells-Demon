@@ -25,6 +25,8 @@
 
 #define INVERSE_EXPONENTIAL(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
 
+#define INTERSECTS(a, b) ((a.x > b.x) && (a.x < b.x + b.width) && (a.y > b.y) && (a.y < b.y + b.height))
+
 static inline float factorial(float n) {
     float f = 1;
     for (float i = 1; i <= n; ++i) { 
@@ -57,4 +59,7 @@ typedef struct UIEvent {
     bool add;
     bool sub;
 } UIEvent;
+
+const Rectangle displayPanelTop = Rectangle({ 800, 0, 260, 90 });
+const Rectangle displayPanelBottom = Rectangle({ 550, 600, 180, 90 });
 

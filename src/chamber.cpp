@@ -1,4 +1,5 @@
 #include "chamber.hpp"
+#include "raylib.h"
 
 void Chamber::Load() {
     grid.Load(CONTAINER_WIDTH, CONTAINER_HEIGHT, MOLECULE_RADIUS * 4);
@@ -45,7 +46,15 @@ void Chamber::Update(const Memo& memo) {
     const Thermal& stats = memo.stats;
     Wall& door = walls[1];
 
-    if (IsKeyReleased(KEY_SPACE)) {
+    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+        const Vector2& mousePos = GetMousePosition();
+
+        if ((INTERSECTS(mousePos, displayPanelTop)) || (INTERSECTS(mousePos, displayPanelBottom))) {
+            return;
+        }
+    }
+
+    if (IsKeyReleased(KEY_SPACE) || IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         isDoorClosing = true;
     }
 
@@ -63,7 +72,7 @@ void Chamber::Update(const Memo& memo) {
         }
     }
 
-    if (IsKeyDown(KEY_SPACE)) {
+    if (IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
         isDoorClosing = false;
 
         if (doorFrame == 0 && door.rect.y > DOOR_MIN_Y) {

@@ -1,4 +1,5 @@
 #include "display.hpp"
+#include "common.hpp"
 #include "raylib.h"
 
 void Display::Load() {
@@ -11,14 +12,16 @@ UIEvent Display::Update() {
 	if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
 		const Vector2& mousePos = GetMousePosition();
 
-		if (INTERSECTS(mousePos, resetButton)) {
-			event.reset = true;
-		} else if (INTERSECTS(mousePos, pauseButton)) {
-			event.pause = true;
-		} else if (INTERSECTS(mousePos, addButton)) {
-			event.add = true;
-		} else if (INTERSECTS(mousePos, subButton)) {
-			event.sub = true;
+		if ((INTERSECTS(mousePos, displayPanelTop)) || (INTERSECTS(mousePos, displayPanelBottom))) {
+			if (INTERSECTS(mousePos, resetButton)) {
+				event.reset = true;
+			} else if (INTERSECTS(mousePos, pauseButton)) {
+				event.pause = true;
+			} else if (INTERSECTS(mousePos, addButton)) {
+				event.add = true;
+			} else if (INTERSECTS(mousePos, subButton)) {
+				event.sub = true;
+			}
 		}
 
 	}
